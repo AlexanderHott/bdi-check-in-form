@@ -8,6 +8,9 @@ export const env = createEnv({
    */
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]),
+    SHEET_ID: z.string(),
+    CLIENT_EMAIL: z.string().email(),
+    PRIVATE_KEY: z.string(),
   },
 
   /**
@@ -25,6 +28,9 @@ export const env = createEnv({
    */
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
+    SHEET_ID: process.env.SHEET_ID,
+    CLIENT_EMAIL: process.env.CLIENT_EMAIL,
+    PRIVATE_KEY: process.env.PRIVATE_KEY,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
