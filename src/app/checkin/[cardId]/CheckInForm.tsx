@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 const REASONS = [
   "3D Printing",
   "Sewing",
-  "Lazer Cutting",
+  "Laser Cutting",
   "Hand Tools",
 ] as const;
 const formSchema = z.object({

@@ -73,7 +73,18 @@ export function CardIdForm() {
             <FormItem>
               <FormLabel>Brandeis ID</FormLabel>
               <FormControl>
-                <Input autoFocus placeholder="123456789101213" {...field} />
+                <Input
+                  autoFocus
+                  type="number"
+                  disabled={form.formState.isSubmitted}
+                  placeholder="123456789101213"
+                  {...field}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      field.onChange(e);
+                    }
+                  }}
+                />
               </FormControl>
               <FormDescription>
                 This is your Brandies ID card number
