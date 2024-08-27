@@ -18,9 +18,14 @@ import {
 import { Input } from "~/components/ui/input";
 
 const formSchema = z.object({
-  cardId: z.string().min(2, {
-    message: "Swipe your ID card",
-  }),
+  cardId: z
+    .string()
+    .min(15, {
+      message: "Card ID must be 15 numbers",
+    })
+    .max(15, {
+      message: "Card ID must be 15 numbers",
+    }),
 });
 
 // function usePerson(cardId: string) {
@@ -34,21 +39,27 @@ const formSchema = z.object({
 //   });
 // }
 //
-export function CardIdForm() {
+
+export function CardIdForm({
+  redirect, // must end with a "/"
+}: {
+  redirect: string;
+}) {
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       cardId: "",
     },
+    mode: "onChange",
   });
 
   const onSubmit = useCallback(
     (values: z.infer<typeof formSchema>) => {
       console.log(values);
-      router.push(`/checkin/${values.cardId}`);
+      router.push(redirect + values.cardId.toString());
     },
-    [router],
+    [router, redirect],
   );
 
   useEffect(() => {
@@ -76,14 +87,12 @@ export function CardIdForm() {
                 <Input
                   autoFocus
                   type="number"
-                  disabled={form.formState.isSubmitted}
-                  placeholder="123456789101213"
+                  disabled={
+                    form.formState.isSubmitted &&
+                    (form.formState.isValid || form.formState.isValidating)
+                  }
+                  placeholder="123456789101112"
                   {...field}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      field.onChange(e);
-                    }
-                  }}
                 />
               </FormControl>
               <FormDescription>
@@ -94,7 +103,13 @@ export function CardIdForm() {
           )}
         />
 
-        <Button type="submit" disabled={form.formState.isSubmitted}>
+        <Button
+          type="submit"
+          disabled={
+            form.formState.isSubmitted &&
+            (form.formState.isValid || form.formState.isValidating)
+          }
+        >
           Submit
         </Button>
       </form>

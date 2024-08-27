@@ -7,6 +7,8 @@ export type Person = {
   cardId: string;
   email: string;
   name: string;
+  gender: string;
+  ethnicity: string;
 };
 
 export async function getPerson(cardId: string): Promise<Person | undefined> {
@@ -38,6 +40,8 @@ export async function getPerson(cardId: string): Promise<Person | undefined> {
     cardId: row[0] as string,
     email: row[1] as string,
     name: row[2] as string,
+    gender: row[3] as string,
+    ethnicity: row[4] as string,
   };
 }
 
@@ -45,10 +49,12 @@ export type CheckIn = {
   cardId: string;
   email: string;
   name: string;
-  reason: string;
+  gender: string;
+  ethnicity: string;
+  reasons: string[];
 };
 
-export async function postCheckIn(checkIn: CheckIn) {
+export async function postCheckIn(checkIn: CheckIn, table: string) {
   console.log("checkin", checkIn);
   const auth = new google.auth.JWT({
     email: env.CLIENT_EMAIL,
@@ -60,10 +66,19 @@ export async function postCheckIn(checkIn: CheckIn) {
   await sheet.spreadsheets.values.append({
     spreadsheetId: env.SHEET_ID,
     auth: auth,
-    range: "checkins",
+    range: table,
     valueInputOption: "RAW",
     requestBody: {
-      values: [[checkIn.cardId, checkIn.email, checkIn.name, checkIn.reason]],
+      values: [
+        [
+          checkIn.cardId,
+          checkIn.email,
+          checkIn.name,
+          checkIn.gender,
+          checkIn.ethnicity,
+          checkIn.reasons.join(";"),
+        ],
+      ],
     },
   });
 }
@@ -82,7 +97,15 @@ export async function postNewPerson(person: Person) {
     range: "people",
     valueInputOption: "RAW",
     requestBody: {
-      values: [[person.cardId, person.email, person.name]],
+      values: [
+        [
+          person.cardId,
+          person.email,
+          person.name,
+          person.gender,
+          person.ethnicity,
+        ],
+      ],
     },
   });
 }
