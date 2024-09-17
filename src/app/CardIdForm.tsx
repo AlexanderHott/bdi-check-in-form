@@ -74,33 +74,40 @@ export function CardIdForm({
     return () => subscription.unsubscribe();
   }, [form, form.watch, onSubmit]);
 
+  useEffect(() => {
+    const interval = setInterval(() => form.setFocus("cardId"), 30 * 1000);
+    return () => clearInterval(interval);
+  }, [form]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
           name="cardId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Brandeis ID</FormLabel>
-              <FormControl>
-                <Input
-                  autoFocus
-                  type="number"
-                  disabled={
-                    form.formState.isSubmitted &&
-                    (form.formState.isValid || form.formState.isValidating)
-                  }
-                  placeholder="123456789101112"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                This is your Brandies ID card number
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            return (
+              <FormItem>
+                <FormLabel>Brandeis ID</FormLabel>
+                <FormControl>
+                  <Input
+                    autoFocus
+                    type="number"
+                    disabled={
+                      form.formState.isSubmitted &&
+                      (form.formState.isValid || form.formState.isValidating)
+                    }
+                    placeholder="123456789101112"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  This is your Brandies ID card number
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
 
         <Button
