@@ -17,6 +17,7 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
 import { TimeOut } from "~/components/TimeOut";
+import { Input } from "~/components/ui/input";
 
 const REASON_TO_IMAGE = {
   "3D Printing": "/3d-printing.webp",
@@ -38,6 +39,7 @@ const formSchema = z.object({
   gender: z.string(),
   ethnicity: z.string(),
   reasons: z.array(z.enum(REASONS)),
+  reason_other: z.string(),
 });
 
 export function MLCheckInForm({ person }: { person: Person }) {
@@ -51,12 +53,19 @@ export function MLCheckInForm({ person }: { person: Person }) {
       gender: person.gender,
       ethnicity: person.ethnicity,
       reasons: [],
+      reason_other: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log("on submit", values);
-    await postCheckIn(values, "ml-checkins");
+    await postCheckIn(
+      {
+        ...values,
+        reasons: [...values.reasons, `other:${values.reason_other}`],
+      },
+      "ml-checkins",
+    );
     router.push("/ml");
   }
 
@@ -117,6 +126,17 @@ export function MLCheckInForm({ person }: { person: Person }) {
                     />
                   ))}
                 </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="reason_other"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Other</FormLabel>
+                <Input {...field} />
                 <FormMessage />
               </FormItem>
             )}
