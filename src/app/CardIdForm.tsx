@@ -75,7 +75,7 @@ export function CardIdForm({
   }, [form, form.watch, onSubmit]);
 
   useEffect(() => {
-    const interval = setInterval(() => form.setFocus("cardId"), 30 * 1000);
+    const interval = setInterval(() => form.setFocus("cardId"), 1 * 1000);
     return () => clearInterval(interval);
   }, [form]);
 
