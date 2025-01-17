@@ -29,3 +29,24 @@ Easiest is <https://vercel.com>, but you can deploy anywhere with `bun run next 
 ## Resources
 
 - https://dev.to/ku6ryo/google-sheets-api-in-typescript-setup-and-hello-world-10oh
+
+
+--- 
+
+# TODO
+
+- [x] update demographics page
+- [ ] make loading pages better / show up
+- [ ] check out / swipe out
+- [ ] add "Hello $user" to check in page
+- [x] make sure card number start with `603305`
+
+- [ ] make design responsive for smaller screens
+- [ ] page after done signing in for extra info + button for "next sign in"
+  - [ ] email about missing / bad experience
+
+- [ ] arrow / gif for where to swipe card
+- [ ] make email an alternative
+
+
+

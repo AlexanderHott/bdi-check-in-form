@@ -7,7 +7,7 @@ export default async function MLCheckInPage({
 }: {
   params: { cardId: string };
 }) {
-  const { cardId } = params;
+  const { cardId } = await params;
   if (cardId.length !== 15) {
     redirect("/al");
   }

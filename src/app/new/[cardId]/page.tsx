@@ -6,7 +6,7 @@ export default async function NewPersonPage({
 }: {
   params: { cardId: string };
 }) {
-  const { cardId } = params;
+  const { cardId } = await params;
   return (
     <>
       <h1 className="mb-8 text-4xl font-bold">BDI Check-in Form</h1>

@@ -42,9 +42,11 @@ const formSchema = z.object({
   reason_other: z.string(),
 });
 
+type FormSchema = z.infer<typeof formSchema>;
+
 export function ALCheckInForm({ person }: { person: Person }) {
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       cardId: person.cardId,
@@ -57,7 +59,7 @@ export function ALCheckInForm({ person }: { person: Person }) {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: FormSchema) {
     console.log("on submit", values);
     await postCheckIn(
       {
@@ -71,7 +73,7 @@ export function ALCheckInForm({ person }: { person: Person }) {
 
   return (
     <>
-      <TimeOut timeout={60} href="/al" />
+      {/*<TimeOut timeout={60} href="/al" />*/}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
@@ -116,7 +118,7 @@ export function ALCheckInForm({ person }: { person: Person }) {
                                   alt=""
                                   width={250}
                                   height={250}
-                                  className="pointer-events-none rounded-sm"
+                                  className="pointer-events-none aspect-auto rounded-sm"
                                 />
                               </CardContent>
                             </Card>

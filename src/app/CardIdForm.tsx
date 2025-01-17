@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -20,6 +21,7 @@ import { Input } from "~/components/ui/input";
 const formSchema = z.object({
   cardId: z
     .string()
+    .startsWith("603305", { message: "Brandeis cards must start with 603305" })
     .min(15, {
       message: "Card ID must be 15 numbers",
     })
@@ -27,6 +29,7 @@ const formSchema = z.object({
       message: "Card ID must be 15 numbers",
     }),
 });
+type FormSchema = z.infer<typeof formSchema>;
 
 // function usePerson(cardId: string) {
 //   return useQuery({
@@ -46,7 +49,7 @@ export function CardIdForm({
   redirect: string;
 }) {
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       cardId: "",
@@ -55,7 +58,7 @@ export function CardIdForm({
   });
 
   const onSubmit = useCallback(
-    (values: z.infer<typeof formSchema>) => {
+    (values: FormSchema) => {
       console.log(values);
       router.push(redirect + values.cardId.toString());
     },
@@ -86,6 +89,7 @@ export function CardIdForm({
           control={form.control}
           name="cardId"
           render={({ field }) => {
+            const { onChange, ...rest } = field;
             return (
               <FormItem>
                 <FormLabel>Brandeis ID</FormLabel>
@@ -97,12 +101,16 @@ export function CardIdForm({
                       form.formState.isSubmitted &&
                       (form.formState.isValid || form.formState.isValidating)
                     }
-                    placeholder="123456789101112"
-                    {...field}
+                    placeholder="603305000000000"
+                    onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                      if (e.currentTarget.value.length > 15) return;
+                      return onChange(e);
+                    }}
+                    {...rest}
                   />
                 </FormControl>
                 <FormDescription>
-                  This is your Brandies ID card number
+                  This is your Brandeis ID card number
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -117,7 +125,11 @@ export function CardIdForm({
             (form.formState.isValid || form.formState.isValidating)
           }
         >
-          Submit
+          {form.formState.isLoading ? (
+            <Loader className="animate-spin" />
+          ) : (
+            "Submit"
+          )}
         </Button>
       </form>
     </Form>

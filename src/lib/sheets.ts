@@ -7,11 +7,14 @@ export type Person = {
   cardId: string;
   email: string;
   name: string;
+  graduateStatus: string;
+  graduatingYear?: string;
+  majors: string[];
+  ethnicities: string[];
   gender: string;
-  ethnicity: string;
 };
 
-export async function getPerson(cardId: string): Promise<Person | undefined> {
+export async function getPerson(cardId: string) {
   const auth = new google.auth.JWT({
     email: env.CLIENT_EMAIL,
     key: env.PRIVATE_KEY,
@@ -49,8 +52,11 @@ export type CheckIn = {
   cardId: string;
   email: string;
   name: string;
+  graduateStatus: string;
+  graduatingYear?: string;
+  majors: string[];
+  ethnicities: string[];
   gender: string;
-  ethnicity: string;
   reasons: string[];
 };
 
@@ -74,8 +80,11 @@ export async function postCheckIn(checkIn: CheckIn, table: string) {
           checkIn.cardId,
           checkIn.email,
           checkIn.name,
+          checkIn.graduateStatus,
+          checkIn.graduatingYear ?? "",
+          checkIn.majors.join(";"),
+          checkIn.ethnicities.join(";"),
           checkIn.gender,
-          checkIn.ethnicity,
           checkIn.reasons.join(";"),
         ],
       ],
@@ -102,8 +111,11 @@ export async function postNewPerson(person: Person) {
           person.cardId,
           person.email,
           person.name,
+          person.graduateStatus,
+          person.graduatingYear ?? "",
+          person.majors.join(";"),
+          person.ethnicities.join(";"),
           person.gender,
-          person.ethnicity,
         ],
       ],
     },

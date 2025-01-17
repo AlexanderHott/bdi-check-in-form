@@ -44,7 +44,7 @@ const formSchema = z.object({
 
 export function MLCheckInForm({ person }: { person: Person }) {
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<z.infer>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       cardId: person.cardId,
@@ -57,7 +57,7 @@ export function MLCheckInForm({ person }: { person: Person }) {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer) {
     console.log("on submit", values);
     await postCheckIn(
       {
