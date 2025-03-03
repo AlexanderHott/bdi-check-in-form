@@ -48,5 +48,5 @@ Easiest is <https://vercel.com>, but you can deploy anywhere with `bun run next 
 - [ ] arrow / gif for where to swipe card
 - [ ] make email an alternative
 
-
-
+- [ ] configure timeouts for each form page to be a bit longer
+- [ ] add a submit new form button on each page

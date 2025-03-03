@@ -11,7 +11,7 @@ export default async function NewPersonPage({
     <>
       <h1 className="mb-8 text-4xl font-bold">BDI Check-in Form</h1>
       <NewPersonForm cardId={cardId} />
-      <TimeOut timeout={60} href="/" />
+      <TimeOut timeout={120} href="/" />
     </>
   );
 }
