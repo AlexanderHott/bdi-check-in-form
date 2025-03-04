@@ -21,13 +21,17 @@ import { Input } from "~/components/ui/input";
 const formSchema = z.object({
   cardId: z
     .string()
-    .startsWith("603305", { message: "Brandeis cards must start with 603305" })
-    .min(15, {
-      message: "Card ID must be 15 numbers",
+    .trim()
+    .refine((value) => value.length === 15, {
+      message: "Card ID must be exactly 15 characters long",
     })
-    .max(15, {
-      message: "Card ID must be 15 numbers",
-    }),
+    .refine((value) => /^\d+$/.test(value), {
+      message: "Card ID must contain only numeric digits",
+    })
+    .refine((value) => value.startsWith("603305"), {
+      message: "Card ID must start with 603305 for Brandeis cards",
+    })
+    .transform((value) => value.replace(/\s/g, "")),
 });
 type FormSchema = z.infer<typeof formSchema>;
 
@@ -54,7 +58,7 @@ export function CardIdForm({
     defaultValues: {
       cardId: "",
     },
-    mode: "onSubmit",
+    mode: "onChange",
   });
 
   const onSubmit = useCallback(
@@ -70,17 +74,19 @@ export function CardIdForm({
       if (name === "cardId") {
         const { cardId } = value;
         if (cardId?.length === 15) {
-          void form.handleSubmit(onSubmit)();
+          form
+            .trigger()
+            .then((isValid) => {
+              if (isValid) {
+                void form.handleSubmit(onSubmit)();
+              }
+            })
+            .catch((e) => console.error("Error submitting form " + e));
         }
       }
     });
     return () => subscription.unsubscribe();
   }, [form, form.watch, onSubmit]);
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => form.setFocus("cardId"), 1 * 1000);
-  //   return () => clearInterval(interval);
-  // }, [form]);
 
   return (
     <Form {...form}>
@@ -103,7 +109,8 @@ export function CardIdForm({
                     }
                     placeholder="603305000000000"
                     onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                      return onChange(e);
+                      if (e.currentTarget.value.length <= 15)
+                        return onChange(e);
                     }}
                     onBlur={() => {
                       onBlur();
@@ -121,19 +128,28 @@ export function CardIdForm({
           }}
         />
 
-        <Button
-          type="submit"
-          disabled={
-            form.formState.isSubmitted &&
-            (form.formState.isValid || form.formState.isValidating)
-          }
-        >
-          {form.formState.isLoading ? (
-            <Loader className="animate-spin" />
-          ) : (
-            "Submit"
-          )}
-        </Button>
+        <div className="flex gap-4">
+          <Button
+            type="button"
+            variant={"secondary"}
+            onClick={() => form.reset()}
+          >
+            Clear
+          </Button>
+          <Button
+            type="submit"
+            disabled={
+              form.formState.isSubmitted &&
+              (form.formState.isValid || form.formState.isValidating)
+            }
+          >
+            {form.formState.isLoading ? (
+              <Loader className="animate-spin" />
+            ) : (
+              "Submit"
+            )}
+          </Button>
+        </div>
       </form>
     </Form>
   );
