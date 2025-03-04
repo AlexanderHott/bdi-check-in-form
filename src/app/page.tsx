@@ -19,6 +19,11 @@ export default function HomePage() {
         desc="Soldering, Electronics..."
         href="/al"
       />
+      <LocationCard
+        title="Digital Scholarship Lab"
+        desc="Specialized computing, ..."
+        href="/ds"
+      />
     </div>
   );
 }

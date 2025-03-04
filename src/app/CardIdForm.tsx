@@ -54,7 +54,7 @@ export function CardIdForm({
     defaultValues: {
       cardId: "",
     },
-    mode: "onChange",
+    mode: "onSubmit",
   });
 
   const onSubmit = useCallback(
@@ -77,10 +77,10 @@ export function CardIdForm({
     return () => subscription.unsubscribe();
   }, [form, form.watch, onSubmit]);
 
-  useEffect(() => {
-    const interval = setInterval(() => form.setFocus("cardId"), 1 * 1000);
-    return () => clearInterval(interval);
-  }, [form]);
+  // useEffect(() => {
+  //   const interval = setInterval(() => form.setFocus("cardId"), 1 * 1000);
+  //   return () => clearInterval(interval);
+  // }, [form]);
 
   return (
     <Form {...form}>
@@ -89,7 +89,7 @@ export function CardIdForm({
           control={form.control}
           name="cardId"
           render={({ field }) => {
-            const { onChange, ...rest } = field;
+            const { onChange, onBlur, ...rest } = field;
             return (
               <FormItem>
                 <FormLabel>Brandeis ID</FormLabel>
@@ -103,8 +103,11 @@ export function CardIdForm({
                     }
                     placeholder="603305000000000"
                     onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                      if (e.currentTarget.value.length > 15) return;
                       return onChange(e);
+                    }}
+                    onBlur={() => {
+                      onBlur();
+                      form.setFocus("cardId");
                     }}
                     {...rest}
                   />
