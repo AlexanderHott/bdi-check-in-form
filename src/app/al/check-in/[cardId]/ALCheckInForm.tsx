@@ -19,26 +19,29 @@ import { Checkbox } from "~/components/ui/checkbox";
 import { TimeOut } from "~/components/TimeOut";
 import { Input } from "~/components/ui/input";
 
-const REASON_TO_IMAGE = {
-  Soldering: "/soldering.jpg",
-  Workstation: "/workstation.jpg",
-  "Electronics Cabinet": "/electronics.jpg",
-  Consulting: "/consulting.jpg",
-} as const;
 const REASONS = [
   "Soldering",
   "Workstation",
   "Electronics Cabinet",
   "Consulting",
 ] as const;
+const REASON_TO_IMAGE = {
+  Soldering: "/soldering.jpg",
+  Workstation: "/workstation.jpg",
+  "Electronics Cabinet": "/electronics.jpg",
+  Consulting: "/consulting.jpg",
+} satisfies Record<(typeof REASONS)[number], string>;
 
 const formSchema = z.object({
   cardId: z.string().length(15, "Invalid card id"),
   email: z.string().email(),
   name: z.string(),
   gender: z.string(),
-  ethnicity: z.string(),
-  reasons: z.array(z.enum(REASONS)),
+  ethnicities: z.array(z.string()),
+  graduateStatus: z.string(),
+  graduatingYear: z.string().optional(),
+  majors: z.array(z.string()),
+  reasons: z.array(z.enum(REASONS).or(z.string())),
   reason_other: z.string(),
 });
 
@@ -53,7 +56,10 @@ export function ALCheckInForm({ person }: { person: Person }) {
       email: person.email,
       name: person.name,
       gender: person.gender,
-      ethnicity: person.ethnicity,
+      ethnicities: person.ethnicities,
+      graduateStatus: person.graduateStatus,
+      graduatingYear: person.graduatingYear,
+      majors: person.majors,
       reasons: [],
       reason_other: "",
     },
@@ -61,19 +67,21 @@ export function ALCheckInForm({ person }: { person: Person }) {
 
   async function onSubmit(values: FormSchema) {
     console.log("on submit", values);
-    await postCheckIn(
-      {
+    let newValues = values;
+    if (values.reason_other) {
+      newValues = {
         ...values,
         reasons: [...values.reasons, `other:${values.reason_other}`],
-      },
-      "al-checkins",
-    );
+      };
+    }
+
+    await postCheckIn(newValues, "al-checkins");
     router.push("/al");
   }
 
   return (
     <>
-      {/*<TimeOut timeout={60} href="/al" />*/}
+      {/* <TimeOut timeout={60} href="/al" /> */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField

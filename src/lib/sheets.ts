@@ -44,7 +44,7 @@ export async function getPerson(cardId: string) {
     email: row[1] as string,
     name: row[2] as string,
     gender: row[3] as string,
-    ethnicity: row[4] as string,
+    ethnicities: row[4] as string,
   };
 }
 

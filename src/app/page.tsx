@@ -22,7 +22,7 @@ export default function HomePage() {
       <LocationCard
         title="Digital Scholarship Lab"
         desc="Specialized computing, ..."
-        href="/ds"
+        href="/dsl"
       />
     </div>
   );

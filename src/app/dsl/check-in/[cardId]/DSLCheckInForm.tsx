@@ -19,18 +19,19 @@ import { Checkbox } from "~/components/ui/checkbox";
 import { TimeOut } from "~/components/TimeOut";
 import { Input } from "~/components/ui/input";
 
-const REASON_TO_IMAGE = {
-  "3D Printing": "/3d-printing.webp",
-  Sewing: "/sewing.webp",
-  "Laser Cutting": "/laser-cutting.webp",
-  "Hand Tools": "/hand-tools.webp",
-} as const;
 const REASONS = [
-  "3D Printing",
-  "Sewing",
-  "Laser Cutting",
-  "Hand Tools",
+  "Geospatial or survey work",
+  "3D scanning and modeling",
+  "High-performance computing",
+  "Consulting",
 ] as const;
+
+const REASON_TO_IMAGE = {
+  "Geospatial or survey work": "/mapping.jpg",
+  "3D scanning and modeling": "/3d-scanning.webp",
+  "High-performance computing": "/high-performance-computing.webp",
+  Consulting: "/consulting.jpg",
+} satisfies Record<(typeof REASONS)[number], string>;
 
 const formSchema = z.object({
   cardId: z.string().length(15, "Invalid card id"),
@@ -47,7 +48,7 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>;
 
-export function MLCheckInForm({ person }: { person: Person }) {
+export function DSLCheckInForm({ person }: { person: Person }) {
   const router = useRouter();
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -75,13 +76,13 @@ export function MLCheckInForm({ person }: { person: Person }) {
       };
     }
 
-    await postCheckIn(newValues, "ml-checkins");
-    router.push("/ml");
+    await postCheckIn(newValues, "dsl-checkins");
+    router.push("/dsl");
   }
 
   return (
     <>
-      <TimeOut timeout={60} href="/ml" />
+      <TimeOut timeout={60} href="/dsl" />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
@@ -124,9 +125,9 @@ export function MLCheckInForm({ person }: { person: Person }) {
                                 <Image
                                   src={REASON_TO_IMAGE[reason]}
                                   alt=""
-                                  width={250}
-                                  height={250}
-                                  className="pointer-events-none rounded-sm"
+                                  height={128}
+                                  width={Math.round((128 * 16) / 9)}
+                                  className="pointer-events-none aspect-video rounded-sm object-cover"
                                 />
                               </CardContent>
                             </Card>
