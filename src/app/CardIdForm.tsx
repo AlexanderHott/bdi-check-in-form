@@ -122,14 +122,8 @@ export function CardIdForm({
 
         <div className="flex gap-4">
           <Button
-            type="button"
-            variant={"secondary"}
-            onClick={() => form.reset()}
-          >
-            Clear
-          </Button>
-          <Button
             type="submit"
+            className="w-full"
             disabled={
               form.formState.isSubmitted &&
               (form.formState.isValid || form.formState.isValidating)
@@ -140,6 +134,14 @@ export function CardIdForm({
             ) : (
               "Submit"
             )}
+          </Button>
+          <Button
+            type="button"
+            className="w-full"
+            variant={"secondary"}
+            onClick={() => form.reset()}
+          >
+            Clear
           </Button>
         </div>
       </form>

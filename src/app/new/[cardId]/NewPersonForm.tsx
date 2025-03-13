@@ -451,13 +451,23 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
               )}
             />
           )}
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={form.formState.isSubmitting}
-          >
-            {form.formState.isSubmitting ? <Loading /> : "Continue"}
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? <Loading /> : "Submit"}
+            </Button>
+            <Button
+              onClick={() => router.back()}
+              variant={"secondary"}
+              type="button"
+              className="w-full"
+            >
+              Back
+            </Button>
+          </div>
         </form>
       </Form>
     </>

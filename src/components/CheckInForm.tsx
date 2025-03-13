@@ -123,13 +123,23 @@ export function CheckInForm({
               </FormItem>
             )}
           />
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={form.formState.isSubmitting}
-          >
-            {form.formState.isSubmitting ? <Loading /> : "Submit"}
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? <Loading /> : "Submit"}
+            </Button>
+            <Button
+              onClick={() => router.back()}
+              variant={"secondary"}
+              type="button"
+              className="w-full"
+            >
+              Back
+            </Button>
+          </div>
         </form>
       </Form>
     </>
