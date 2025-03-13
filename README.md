@@ -33,24 +33,16 @@ Easiest is <https://vercel.com>, but you can deploy anywhere with `bun run next 
 
 # TODO
 
-- [x] update demographics page
-- [x] make loading pages better / show up
-- [x] add "Hello $user" to check in page
-- [x] make sure card number start with `603305`
+- [ ] make email an alternative
 
-- [x] make design responsive for smaller screens
-- [ ] page after done signing in for extra info + button for "next sign in"
+- [ ] "thanks for checking in"
+  - [ ] remember to pick up your training ID
+  - [ ] check in another user
 
 - [ ] check out / swipe out
   - [ ] email about missing / bad experience
+  - [ ] 4 smiley faces
 
 - [ ] arrow / gif for where to swipe card
-- [ ] make email an alternative
-
-- [x] configure timeouts for each form page to be a bit longer
-- [ ] add a submit new form button on each page
-
-- [ ] fix timeout to only kick in when 0 input
-- [ ] bump font size
 
 - ui is 1024x600
