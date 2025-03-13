@@ -41,11 +41,12 @@ export async function getPerson(cardId: string): Promise<Person | undefined> {
     cardId: row[0],
     email: row[1],
     name: row[2],
-    gender: row[3],
-    ethnicities: (row[4] as string).split(";"),
-    majors: (row[5] as string).split(";"),
-    graduateStatus: row[6],
-    graduatingYear: row[7],
+    graduateStatus: row[3],
+    graduatingYear: row[4],
+    graduateResearch: row[5],
+    majors: (row[6] as string).split(";"),
+    ethnicities: (row[7] as string).split(";"),
+    gender: row[8],
   });
 
   if (!parseResult.success) {
@@ -80,6 +81,7 @@ export async function postCheckIn(checkIn: CheckIn, table: string) {
           checkIn.person.name,
           checkIn.person.graduateStatus,
           checkIn.person.graduatingYear ?? "",
+          checkIn.person.graduateResearchStatus ?? "",
           checkIn.person.majors.join(";"),
           checkIn.person.ethnicities.join(";"),
           checkIn.person.gender,

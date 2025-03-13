@@ -19,6 +19,7 @@ import { type Person, type CheckIn, checkInSchmas } from "~/schemas";
 import { type z } from "zod";
 import { cn } from "~/lib/utils";
 import { Loading } from "./Loading";
+import { TimeOut } from "./TimeOut";
 
 export function CheckInForm({
   person,
@@ -52,7 +53,8 @@ export function CheckInForm({
 
   return (
     <>
-      {/* <TimeOut timeout={60} href={redirectUrl} /> */}
+      <TimeOut href={redirectUrl} />
+      <h2 className="text-lg">Welcome, {person.name}</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
@@ -61,14 +63,14 @@ export function CheckInForm({
             render={() => (
               <FormItem>
                 <FormLabel>Reason</FormLabel>
-                <div className="flex flex-row flex-wrap gap-4">
+                <div className="grid auto-rows-fr grid-cols-4 grid-rows-2 gap-4">
                   {reasons.map((reason) => (
                     <FormField
                       key={reason}
                       control={form.control}
                       name="reasons"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="h-full">
                           <FormLabel className="font-normal">
                             <Card
                               className={cn(

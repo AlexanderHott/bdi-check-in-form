@@ -3,7 +3,13 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 
-export function TimeOut({ timeout, href }: { timeout: number; href: string }) {
+export function TimeOut({
+  timeout = 60,
+  href,
+}: {
+  timeout?: number;
+  href: string;
+}) {
   const router = useRouter();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lastActivityRef = useRef(Date.now());

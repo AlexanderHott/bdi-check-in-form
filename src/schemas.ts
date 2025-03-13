@@ -76,6 +76,7 @@ export const personSchema = z
     name: z.string(),
     graduateStatus: z.enum(GRADUATE_STATUS).or(z.string()),
     graduatingYear: z.string().optional(),
+    graduateResearchStatus: z.string().optional(),
     majors: z.array(z.enum(MAJORS).or(z.string())),
     ethnicities: z.array(z.enum(ETHNICITIES).or(z.string())),
     gender: z.enum(GENDERS).or(z.string()),
@@ -110,7 +111,7 @@ export const AL_REASONS = [
   "Soldering",
   "CNC",
   "Laser Cutting",
-  "Electronics Cabinet",
+  "Electronics",
   "Hand Tools",
   "Consultation",
   "Club Meeting",
@@ -135,11 +136,19 @@ export const DSL_REASONS = [
 export function makeCheckInSchema<
   const T extends readonly [string, ...string[]],
 >(reasons: T) {
-  return z.object({
-    person: personSchema,
-    reasons: z.array(z.enum(reasons)),
-    reasonOther: z.string(),
-  });
+  return z
+    .object({
+      person: personSchema,
+      reasons: z.array(z.enum(reasons)),
+      reasonOther: z.string(),
+    })
+    .refine(
+      (data) => data.reasons.length > 0 || data.reasonOther.trim().length > 0,
+      {
+        message: "You must have at least 1 reason or fill out the Other field",
+        path: ["reasonOther"],
+      },
+    );
 }
 
 export const mlCheckInSchema = makeCheckInSchema(ML_REASONS);

@@ -27,8 +27,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "~/components/ui/collapsible";
-import { ChevronsUpDown } from "lucide-react";
-import { useState } from "react";
+import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
+import { useRef, useState } from "react";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
   ETHNICITIES,
@@ -40,6 +40,7 @@ import {
   type NewPerson,
 } from "~/schemas";
 import { Loading } from "~/components/Loading";
+import { TimeOut } from "~/components/TimeOut";
 
 export function NewPersonForm({ cardId }: { cardId: string }) {
   const router = useRouter();
@@ -85,6 +86,8 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
 
   return (
     <>
+      <TimeOut href="/" />
+      <ScrollButtons />
       <WhyDoWeAsk />
       <Form {...form}>
         <form
@@ -490,5 +493,34 @@ function WhyDoWeAsk() {
         </p>
       </CollapsibleContent>
     </Collapsible>
+  );
+}
+
+const scrollUp = () => {
+  window.scrollBy({ top: -window.innerHeight / 2, behavior: "smooth" });
+};
+
+const scrollDown = () => {
+  window.scrollBy({ top: window.innerHeight / 2, behavior: "smooth" });
+};
+
+function ScrollButtons() {
+  return (
+    <div className="fixed bottom-4 right-4">
+      <div className="flex flex-col gap-2">
+        <button
+          onClick={scrollUp}
+          className="flex h-8 w-8 items-center justify-center rounded-full border bg-white"
+        >
+          <ArrowUp size={16} />
+        </button>
+        <button
+          onClick={scrollDown}
+          className="flex h-8 w-8 items-center justify-center rounded-full border bg-white"
+        >
+          <ArrowDown size={16} />
+        </button>
+      </div>
+    </div>
   );
 }

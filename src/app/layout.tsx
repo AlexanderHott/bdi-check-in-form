@@ -23,8 +23,8 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <main className="flex h-screen justify-center">
-          <div className="w-full max-w-2xl pt-4 xl:pt-16">{children}</div>
+        <main className="flex h-full justify-center">
+          <div className="w-full max-w-4xl p-4 xl:p-16">{children}</div>
         </main>
       </body>
     </html>
