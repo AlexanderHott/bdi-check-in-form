@@ -72,6 +72,7 @@ export function CheckInForm({
                           <FormLabel className="font-normal">
                             <Card
                               className={cn(
+                                // @ts-expect-error not specific enough generics
                                 field.value?.includes(reason) &&
                                   "border-blue-500 bg-blue-100",
                               )}
@@ -79,6 +80,7 @@ export function CheckInForm({
                               <CardHeader className="flex flex-row items-center gap-2">
                                 <FormControl>
                                   <Checkbox
+                                    // @ts-expect-error not specific enough generics
                                     checked={field.value?.includes(reason)}
                                     onCheckedChange={(checked: boolean) => {
                                       return checked
