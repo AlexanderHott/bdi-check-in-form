@@ -1,27 +1,33 @@
 import { redirect } from "next/navigation";
+import { CheckInForm } from "~/components/CheckInForm";
 import { getPerson } from "~/lib/sheets";
-import { DSLCheckInForm } from "./DSLCheckInForm";
+import { DSL_REASONS } from "~/schemas";
 
 export default async function MLCheckInPage({
   params,
 }: {
   params: { cardId: string };
 }) {
-  const { cardId } = await params;
+  // eslint-disable-next-line @typescript-eslint/await-thenable
+  const { cardId } = await params; // nextjs 15 dynamicIO
   if (cardId.length !== 15) {
     redirect("/dsl");
   }
   const person = await getPerson(cardId);
   if (!person) {
-    const redirectUrl = encodeURI(`/al/check-in/${cardId}`);
+    const redirectUrl = encodeURI(`/dsl/check-in/${cardId}`);
     redirect(`/new/${cardId}?redirect=${redirectUrl}`);
   }
-  console.log("person", person);
-
   return (
     <>
-      <h1 className="mb-8 text-4xl font-bold">Automation Lab Check-in Form</h1>
-      <DSLCheckInForm person={person} />
+      <CheckInForm
+        person={person}
+        // TODO: move back to al-checkins
+        sheetName="dsl-checkins-new"
+        redirectUrl="/dsl"
+        reasons={DSL_REASONS}
+        schemaName="dslCheckInSchema"
+      />
     </>
   );
 }

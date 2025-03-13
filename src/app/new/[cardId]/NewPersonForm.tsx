@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import {
   Form,
@@ -29,95 +28,47 @@ import {
   CollapsibleTrigger,
 } from "~/components/ui/collapsible";
 import { ChevronsUpDown } from "lucide-react";
-import { ChangeEvent, useState } from "react";
+import { useState } from "react";
 import { Checkbox } from "~/components/ui/checkbox";
-
-const GRADUATE_STATUS = [
-  "Undergraduate Student",
-  "Graduate Student",
-  "Staff",
-  "Faculty",
-  "Alum",
-  "Other",
-];
-
-const MAJORS = [
-  "STEM",
-  "Social sciences",
-  "Humanities",
-  "Business School",
-  "Art",
-  "Other",
-];
-
-const ETHNICITIES = [
-  "White",
-  "Black or African American",
-  "American Indian or Alaska Native",
-  "Asian",
-  "Native Hawaiian or Other Pacific Islander",
-  "Prefer not to answer",
-  "Other",
-];
-
-const GENDERS = [
-  "Male",
-  "Female",
-  "Non-binary",
-  "Prefer not to answer",
-  "Other",
-];
-
-const formSchema = z
-  .object({
-    cardId: z.string().min(2).max(50),
-    email: z.string().email(),
-    name: z.string(),
-    graduateStatus: z.string(),
-    graduatingYear: z.string().optional(),
-    majors: z.array(z.string()),
-    majorOther: z.string().optional(),
-    ethnicities: z.array(z.string()),
-    ethnicityOther: z.string().optional(),
-    gender: z.string(),
-  })
-  .refine(
-    (data) =>
-      !(
-        data.graduateStatus.includes("Student") &&
-        data.graduatingYear === undefined
-      ),
-    {
-      message: "Graduation Year is required when you are a student",
-      path: ["graduateStatus"],
-    },
-  );
-type FormSchema = z.infer<typeof formSchema>;
-
-const YEARS = Array(5)
-  .fill(0)
-  .map((_, i) => (new Date().getFullYear() + i).toString());
+import {
+  ETHNICITIES,
+  GENDERS,
+  GRADUATE_STATUS,
+  MAJORS,
+  newPersonSchema,
+  YEARS,
+  type NewPerson,
+} from "~/schemas";
+import { Loading } from "~/components/Loading";
 
 export function NewPersonForm({ cardId }: { cardId: string }) {
   const router = useRouter();
-  const form = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<NewPerson>({
+    resolver: zodResolver(newPersonSchema),
     defaultValues: {
       cardId: cardId,
       email: "",
       name: "",
-      graduateStatus: "",
+      graduateStatus: "Undergraduate Student",
+      graduateStatusOther: "",
       graduatingYear: "",
+      graduateResearchStatus: "",
       majors: [],
       majorOther: "",
       ethnicities: [],
       ethnicityOther: "",
-      gender: "",
+      gender: "Male",
+      genderOther: "",
     },
   });
 
   const [graduateStatusShowOther, setGraduateStatusShowOther] = useState(false);
-  const [graduateStatusShowYear, setGraduateStatusShowYear] = useState(false);
+  const [graduateStatusShowYear, setGraduateStatusShowYear] = useState(
+    form.formState.defaultValues?.graduateStatus === "Undergraduate Student",
+  );
+  const [graduateStatusShowResearch, setGraduateStatusShowResearch] = useState(
+    form.formState.defaultValues?.graduateStatus === "Graduate Student",
+  );
   const [majorShowOther, setMajorShowOther] = useState(false);
   const [ethnicityShowOther, setEthnicityShowOther] = useState(false);
   const [genderShowOther, setGenderShowOther] = useState(false);
@@ -125,13 +76,15 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect");
 
-  async function onSubmit(values: FormSchema) {
-    await postNewPerson(values);
+  async function onSubmit(value: NewPerson) {
+    console.log("new person", value);
+    await postNewPerson(value);
     const decodedRedirectUrl = decodeURI(redirectUrl ?? "/");
     router.push(decodedRedirectUrl);
   }
+
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <WhyDoWeAsk />
       <Form {...form}>
         <form
@@ -149,6 +102,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input
+                    autoFocus
                     type="email"
                     placeholder="name@brandeis.edu"
                     {...field}
@@ -185,21 +139,30 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormLabel>What best describes you?</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    onValueChange={(value: string) => {
+                    onValueChange={(
+                      value: (typeof GRADUATE_STATUS)[number],
+                    ) => {
                       if (value === "Other") {
-                        field.onChange("");
                         setGraduateStatusShowOther(true);
                       } else {
-                        field.onChange(value);
                         setGraduateStatusShowOther(false);
                       }
                       // clear graduating year if they select a field with student and then another one
-                      if (value.includes("Student")) {
+                      if (value === "Undergraduate Student") {
                         setGraduateStatusShowYear(true);
                       } else {
                         setGraduateStatusShowYear(false);
-                        form.setValue("graduatingYear", undefined);
+                        form.setValue("graduatingYear", "");
                       }
+
+                      if (value === "Graduate Student") {
+                        setGraduateStatusShowResearch(true);
+                      } else {
+                        setGraduateStatusShowResearch(false);
+                        form.setValue("graduateResearchStatus", "");
+                      }
+
+                      field.onChange(value);
                     }}
                     defaultValue={field.value}
                     className="flex flex-col space-y-1"
@@ -209,27 +172,28 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                     ))}
                   </RadioGroup>
                 </FormControl>
-                {graduateStatusShowOther && (
-                  <FormControl>
-                    <Input
-                      placeholder="Other"
-                      {...field}
-                      value={
-                        GRADUATE_STATUS.includes(field.value) &&
-                        field.value !== "Other"
-                          ? ""
-                          : field.value
-                      }
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        field.onChange(e.target.value)
-                      }
-                    />
-                  </FormControl>
-                )}
                 <FormMessage />
               </FormItem>
             )}
           />
+          {/* 
+            Graduating Year Other field 
+          */}
+          {graduateStatusShowOther && (
+            <FormField
+              control={form.control}
+              name="graduateStatusOther"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Other</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Graduate Status" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           {/* 
             Graduating Year field 
           */}
@@ -255,6 +219,37 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                           {year}
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          {/* 
+            PhD / Masters Progress 
+          */}
+          {graduateStatusShowResearch && (
+            <FormField
+              control={form.control}
+              name="graduateResearchStatus"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Graduate Research Status</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value?.toString()}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="What are you currently doing?" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Course work">Course work</SelectItem>
+                      <SelectItem value="Dissertation work">
+                        Dissertation work
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -297,10 +292,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                                   setMajorShowOther(false);
                                 }
                                 return checked
-                                  ? field.onChange([
-                                      ...(field.value as string[]),
-                                      major,
-                                    ])
+                                  ? field.onChange([...field.value, major])
                                   : field.onChange(
                                       field.value?.filter(
                                         (value: string) => value !== major,
@@ -371,10 +363,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                                   setEthnicityShowOther(false);
                                 }
                                 return checked
-                                  ? field.onChange([
-                                      ...(field.value as string[]),
-                                      ethnicity,
-                                    ])
+                                  ? field.onChange([...field.value, ethnicity])
                                   : field.onChange(
                                       field.value?.filter(
                                         (value: string) => value !== ethnicity,
@@ -395,9 +384,8 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
               </FormItem>
             )}
           />
-
           {/* 
-            Other Ethnicity field 
+            Ethnicity Other field 
           */}
           <FormField
             control={form.control}
@@ -406,14 +394,14 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
               <FormItem>
                 <FormControl>
                   {ethnicityShowOther && (
-                    <Input placeholder="Other major" {...field} />
+                    <Input placeholder="Other ethnicity" {...field} />
                   )}
                 </FormControl>
               </FormItem>
             )}
           />
           {/* 
-            Gender field 
+            Gender field
           */}
           <FormField
             control={form.control}
@@ -423,49 +411,53 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormLabel>Which gender best describes you?</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    onValueChange={(value: any) => {
-                      if (value === "Other") {
-                        field.onChange("");
-                        setGenderShowOther(true);
-                      } else {
-                        field.onChange(value);
-                        setGenderShowOther(false);
-                      }
+                    className="flex flex-col space-y-1"
+                    onValueChange={(value: string) => {
+                      setGenderShowOther(value === "Other");
+                      console.log(value === "Other");
+                      field.onChange(value);
                     }}
                     defaultValue={field.value}
-                    className="flex flex-col space-y-1"
                   >
                     {GENDERS.map((gs) => (
                       <RadioItem key={gs} value={gs} />
                     ))}
                   </RadioGroup>
                 </FormControl>
-                {genderShowOther && (
-                  <FormControl>
-                    <Input
-                      placeholder="Other"
-                      {...field}
-                      value={
-                        GENDERS.includes(field.value) && field.value !== "Other"
-                          ? ""
-                          : field.value
-                      }
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        field.onChange(e.target.value)
-                      }
-                    />
-                  </FormControl>
-                )}
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={form.formState.isSubmitted}>
-            Submit
+          {/* 
+            Gender Other textbox 
+          */}
+          {genderShowOther && (
+            <FormField
+              control={form.control}
+              name="genderOther"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Other Gender</FormLabel>
+                  <FormControl>
+                    <FormControl>
+                      <Input placeholder="Other" {...field} />
+                    </FormControl>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting ? <Loading /> : "Continue"}
           </Button>
         </form>
       </Form>
-    </div>
+    </>
   );
 }
 
@@ -494,7 +486,7 @@ function WhyDoWeAsk() {
         </p>
         <p>
           All demographic questions are optional - but it helps us if you are
-          willing to answer them! You only have to fill out this portion once!
+          willing to answer them!
         </p>
       </CollapsibleContent>
     </Collapsible>

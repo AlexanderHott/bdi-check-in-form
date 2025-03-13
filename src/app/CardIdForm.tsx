@@ -35,23 +35,15 @@ const formSchema = z.object({
 });
 type FormSchema = z.infer<typeof formSchema>;
 
-// function usePerson(cardId: string) {
-//   return useQuery({
-//     queryKey: ["person", cardId],
-//     queryFn: async () => {
-//       const res = await fetch(`/api/person/${cardId}`);
-//       if (!res.ok) throw new Error(res.statusText);
-//       return (await res.json()) as Person;
-//     },
-//   });
-// }
-//
-
 export function CardIdForm({
   redirect, // must end with a "/"
 }: {
   redirect: string;
 }) {
+  if (!redirect.endsWith("/")) {
+    throw new Error("redirect must end with a /");
+  }
+
   const router = useRouter();
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),

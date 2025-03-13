@@ -14,6 +14,7 @@ const config = {
   },
   experimental: {
     ppr: true,
+    reactCompiler: true,
   },
 };
 

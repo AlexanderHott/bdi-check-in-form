@@ -1,3 +1,3 @@
-export default function Loading() {
-  return <div>Maker Lab loading... (this page is still in development)</div>;
-}
+import { Loading } from "~/components/Loading";
+
+export default Loading;
