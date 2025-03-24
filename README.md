@@ -31,7 +31,7 @@ Easiest is <https://vercel.com>, but you can deploy anywhere with `bun run next 
 
 ---
 
-# TODO
+## TODO
 
 - [ ] make email an alternative
 
@@ -50,5 +50,5 @@ Easiest is <https://vercel.com>, but you can deploy anywhere with `bun run next 
 - ui is 1024x600
 
 - [x] make scroll buttons bigger
-- [ ] make "other" fields required
-- [ ] make required fields be nonempty strings
+- [x] make "other" fields required
+- [x] make required fields be nonempty strings

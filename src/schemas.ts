@@ -178,14 +178,19 @@ export function makeCheckInSchema<
     .object({
       person: personSchema,
       reasons: z.array(z.enum(reasons)),
-      reasonOther: z.string().min(1).optional(),
+      reasonOther: z.string(),
     })
     .refine(
-      (data) =>
-        data.reasons.length > 0 || data.reasonOther?.trim().length !== 0,
+      (data) => {
+        const b = !(
+          data.reasons.length === 0 && data.reasonOther?.trim().length === 0
+        );
+        console.log({ b });
+        return b;
+      },
       {
         message: "You must have at least 1 reason or fill out the Other field",
-        path: ["reasonOther"],
+        path: ["reasons"],
       },
     );
 }
