@@ -36,13 +36,19 @@ Easiest is <https://vercel.com>, but you can deploy anywhere with `bun run next 
 - [ ] make email an alternative
 
 - [ ] "thanks for checking in"
+
   - [ ] remember to pick up your training ID
   - [ ] check in another user
 
 - [ ] check out / swipe out
+
   - [ ] email about missing / bad experience
   - [ ] 4 smiley faces
 
 - [ ] arrow / gif for where to swipe card
 
 - ui is 1024x600
+
+- [ ] make scroll buttons bigger
+- [ ] make "other" fields required
+- [ ] make required fields be nonempty strings

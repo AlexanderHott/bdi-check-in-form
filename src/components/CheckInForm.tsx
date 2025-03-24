@@ -62,7 +62,7 @@ export function CheckInForm({
             name="reasons"
             render={() => (
               <FormItem>
-                <FormLabel>Reason</FormLabel>
+                <FormLabel>Please select a reason for your visit</FormLabel>
                 <div className="grid auto-rows-fr grid-cols-4 grid-rows-2 gap-4">
                   {reasons.map((reason) => (
                     <FormField
