@@ -49,6 +49,6 @@ Easiest is <https://vercel.com>, but you can deploy anywhere with `bun run next 
 
 - ui is 1024x600
 
-- [ ] make scroll buttons bigger
+- [x] make scroll buttons bigger
 - [ ] make "other" fields required
 - [ ] make required fields be nonempty strings

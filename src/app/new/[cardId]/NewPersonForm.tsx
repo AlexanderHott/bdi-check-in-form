@@ -507,11 +507,11 @@ function WhyDoWeAsk() {
 }
 
 const scrollUp = () => {
-  window.scrollBy({ top: -window.innerHeight / 2, behavior: "smooth" });
+  window.scrollBy({ top: (-window.innerHeight * 3) / 4, behavior: "smooth" });
 };
 
 const scrollDown = () => {
-  window.scrollBy({ top: window.innerHeight / 2, behavior: "smooth" });
+  window.scrollBy({ top: (window.innerHeight * 3) / 4, behavior: "smooth" });
 };
 
 function ScrollButtons() {
@@ -520,15 +520,15 @@ function ScrollButtons() {
       <div className="flex flex-col gap-2">
         <button
           onClick={scrollUp}
-          className="flex h-8 w-8 items-center justify-center rounded-full border bg-white"
+          className="flex h-32 w-32 items-center justify-center rounded-full border bg-white"
         >
-          <ArrowUp size={16} />
+          <ArrowUp size={64} />
         </button>
         <button
           onClick={scrollDown}
-          className="flex h-8 w-8 items-center justify-center rounded-full border bg-white"
+          className="flex h-32 w-32 items-center justify-center rounded-full border bg-white"
         >
-          <ArrowDown size={16} />
+          <ArrowDown size={64} />
         </button>
       </div>
     </div>

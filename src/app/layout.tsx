@@ -16,11 +16,11 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable}`}>
       <head>
         {/*eslint-disable-next-line @next/next/no-sync-scripts*/}
-        <script
-          // async
-          crossOrigin="anonymous"
-          src="//unpkg.com/react-scan/dist/auto.global.js"
-        />
+        {/* <script */}
+        {/*   // async */}
+        {/*   crossOrigin="anonymous" */}
+        {/*   src="//unpkg.com/react-scan/dist/auto.global.js" */}
+        {/* /> */}
       </head>
       <body>
         <main className="flex h-full justify-center">
