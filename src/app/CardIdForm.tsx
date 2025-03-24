@@ -139,7 +139,7 @@ export function CardIdForm({
             type="button"
             className="w-full"
             variant={"secondary"}
-            onClick={() => form.reset()}
+            onClick={() => window.location.reload()}
           >
             Clear
           </Button>

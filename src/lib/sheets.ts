@@ -17,6 +17,25 @@ function authGoogle() {
   });
 }
 
+const formatDateET = (date: Date) => {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  })
+    .format(date)
+    .replace(/\//g, "/")
+    .replaceAll(",", "");
+};
+function getTimestamp() {
+  return formatDateET(new Date());
+}
+
 export async function getPerson(cardId: string): Promise<Person | undefined> {
   const auth = authGoogle();
   const sheet = google.sheets("v4");
@@ -61,7 +80,7 @@ export async function postCheckIn(checkIn: CheckIn, table: string) {
   const auth = authGoogle();
   const sheet = google.sheets("v4");
 
-  const now = new Date().toISOString();
+  const now = getTimestamp();
 
   const reasons: string[] = checkIn.reasons;
   if (checkIn.reasonOther) {
@@ -72,7 +91,7 @@ export async function postCheckIn(checkIn: CheckIn, table: string) {
     spreadsheetId: env.SHEET_ID,
     auth: auth,
     range: table,
-    valueInputOption: "RAW",
+    valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [
         [
@@ -98,7 +117,7 @@ export async function postNewPerson(person: NewPerson) {
   const auth = authGoogle();
   const sheet = google.sheets("v4");
 
-  const now = new Date().toISOString();
+  const now = getTimestamp();
 
   const majors: string[] = person.majors.filter((maj) => maj !== "Other");
   if (person.majorOther) {
@@ -121,7 +140,7 @@ export async function postNewPerson(person: NewPerson) {
     spreadsheetId: env.SHEET_ID,
     auth: auth,
     range: "people-new",
-    valueInputOption: "RAW",
+    valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [
         [

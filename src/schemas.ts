@@ -47,7 +47,8 @@ export const newPersonSchema = z
     email: z.string().email(),
     name: z
       .string()
-      .min(1, { message: "Name must contain at least 1 character(s)" }),
+      .min(1, { message: "Name must contain at least 1 character(s)" })
+      .regex(/^[A-Za-z]+$/, "Only alphabetical characters are allowed"),
     graduateStatus: z.enum(GRADUATE_STATUS),
     graduateStatusOther: z.string().optional(),
     graduatingYear: z.string().optional(),
