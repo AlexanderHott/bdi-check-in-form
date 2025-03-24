@@ -321,15 +321,20 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
           <FormField
             control={form.control}
             name="majorOther"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  {majorShowOther && (
-                    <Input placeholder="Other major" {...field} />
-                  )}
-                </FormControl>
-              </FormItem>
-            )}
+            render={({ field }) => {
+              if (!majorShowOther) {
+                return <></>;
+              }
+              return (
+                <FormItem>
+                  <FormLabel>Other major</FormLabel>
+                  <FormControl>
+                    <Input placeholder="major" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
           {/* 
             Ethnicities field 
@@ -393,15 +398,20 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
           <FormField
             control={form.control}
             name="ethnicityOther"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  {ethnicityShowOther && (
-                    <Input placeholder="Other ethnicity" {...field} />
-                  )}
-                </FormControl>
-              </FormItem>
-            )}
+            render={({ field }) => {
+              if (!ethnicityShowOther) {
+                return <></>;
+              }
+              return (
+                <FormItem>
+                  <FormLabel>Other ethnicity</FormLabel>
+                  <FormControl>
+                    <Input placeholder="ethnicity" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
           {/* 
             Gender field

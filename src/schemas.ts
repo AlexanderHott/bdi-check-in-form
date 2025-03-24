@@ -36,6 +36,7 @@ export const GENDERS = [
   "Other",
 ] as const;
 
+// FIXME: maybe make a getYears function because this will be out of date if not deployed every year
 export const YEARS = Array(5)
   .fill(0)
   .map((_, i) => (new Date().getFullYear() + i).toString());
@@ -44,18 +45,25 @@ export const newPersonSchema = z
   .object({
     cardId: z.string().length(15),
     email: z.string().email(),
-    name: z.string(),
+    name: z
+      .string()
+      .min(1, { message: "Name must contain at least 1 character(s)" }),
     graduateStatus: z.enum(GRADUATE_STATUS),
     graduateStatusOther: z.string().optional(),
     graduatingYear: z.string().optional(),
     graduateResearchStatus: z.string().optional(),
-    majors: z.array(z.enum(MAJORS)),
-    majorOther: z.string().optional(),
-    ethnicities: z.array(z.enum(ETHNICITIES)),
-    ethnicityOther: z.string().optional(),
+    majors: z
+      .array(z.enum(MAJORS))
+      .min(1, { message: "Please select at least 1 major" }),
+    majorOther: z.string(),
+    ethnicities: z
+      .array(z.enum(ETHNICITIES))
+      .min(1, { message: "Please select at least 1 ethnicity" }),
+    ethnicityOther: z.string(),
     gender: z.enum(GENDERS),
     genderOther: z.string().optional(),
   })
+  // NOTE: return false to signify failure
   .refine(
     (data) =>
       !(
@@ -66,14 +74,44 @@ export const newPersonSchema = z
       message: "Graduation Year is required when you are a student",
       path: ["graduateStatus"],
     },
+  )
+  .refine(
+    (data) =>
+      !(
+        data.majors.filter((major) => major !== "Other").length === 0 &&
+        data.majorOther.length === 0
+      ),
+    {
+      message: "Major must contain at least 1 character(s)",
+      path: ["majorOther"],
+    },
+  )
+  .refine(
+    (data) =>
+      !(
+        data.ethnicities.filter((ethnicity) => ethnicity !== "Other").length ===
+          0 && data.ethnicityOther.length === 0
+      ),
+    {
+      message: "Ethnicity must contain at least 1 character(s)",
+      path: ["ethnicityOther"],
+    },
+  )
+  .refine(
+    (data) => !(data.gender === "Other" && data.genderOther?.length === 0),
+    {
+      message: "Gender must contain at least 1 character(s)",
+      path: ["genderOther"],
+    },
   );
+
 export type NewPerson = z.infer<typeof newPersonSchema>;
 
 export const personSchema = z
   .object({
     cardId: z.string().length(15),
     email: z.string().email(),
-    name: z.string(),
+    name: z.string().min(1),
     graduateStatus: z.enum(GRADUATE_STATUS).or(z.string()),
     graduatingYear: z.string().optional(),
     graduateResearchStatus: z.string().optional(),
@@ -140,10 +178,11 @@ export function makeCheckInSchema<
     .object({
       person: personSchema,
       reasons: z.array(z.enum(reasons)),
-      reasonOther: z.string(),
+      reasonOther: z.string().min(1).optional(),
     })
     .refine(
-      (data) => data.reasons.length > 0 || data.reasonOther.trim().length > 0,
+      (data) =>
+        data.reasons.length > 0 || data.reasonOther?.trim().length !== 0,
       {
         message: "You must have at least 1 reason or fill out the Other field",
         path: ["reasonOther"],
