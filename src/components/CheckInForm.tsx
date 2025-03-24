@@ -1,8 +1,7 @@
 "use client";
-import { postCheckIn, type Person } from "~/lib/sheets";
+import { postCheckIn } from "~/lib/sheets";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import {
   Form,
@@ -13,65 +12,49 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Card, CardContent, CardHeader } from "~/components/ui/card";
+import { Card, CardHeader } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
-import { TimeOut } from "~/components/TimeOut";
 import { Input } from "~/components/ui/input";
+import { type Person, type CheckIn, checkInSchmas } from "~/schemas";
+import { type z } from "zod";
+import { cn } from "~/lib/utils";
+import { Loading } from "./Loading";
+import { TimeOut } from "./TimeOut";
 
-const REASON_TO_IMAGE = {
-  Soldering: "/soldering.jpg",
-  Workstation: "/workstation.jpg",
-  "Electronics Cabinet": "/electronics.jpg",
-  Consulting: "/consulting.jpg",
-} as const;
-const REASONS = [
-  "Soldering",
-  "Workstation",
-  "Electronics Cabinet",
-  "Consulting",
-] as const;
-
-const formSchema = z.object({
-  cardId: z.string().length(15, "Invalid card id"),
-  email: z.string().email(),
-  name: z.string(),
-  gender: z.string(),
-  ethnicity: z.string(),
-  reasons: z.array(z.enum(REASONS)),
-  reason_other: z.string(),
-});
-
-export function ALCheckInForm({ person }: { person: Person }) {
+export function CheckInForm({
+  person,
+  schemaName,
+  reasons,
+  redirectUrl,
+  sheetName,
+}: {
+  person: Person;
+  schemaName: keyof typeof checkInSchmas;
+  reasons: Readonly<CheckIn["reasons"]>;
+  redirectUrl: string;
+  sheetName: string;
+}) {
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const schema = checkInSchmas[schemaName];
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
     defaultValues: {
-      cardId: person.cardId,
-      email: person.email,
-      name: person.name,
-      gender: person.gender,
-      ethnicity: person.ethnicity,
+      person: person,
       reasons: [],
-      reason_other: "",
+      reasonOther: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("on submit", values);
-    await postCheckIn(
-      {
-        ...values,
-        reasons: [...values.reasons, `other:${values.reason_other}`],
-      },
-      "al-checkins",
-    );
-    router.push("/al");
+  async function onSubmit(values: CheckIn) {
+    console.log("on submit", { redirectUrl, sheetName, values });
+    await postCheckIn(values, sheetName);
+    router.push(redirectUrl);
   }
 
   return (
     <>
-      <TimeOut timeout={60} href="/al" />
+      <TimeOut href={redirectUrl} />
+      <h2 className="text-lg">Welcome, {person.name}</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
@@ -79,22 +62,29 @@ export function ALCheckInForm({ person }: { person: Person }) {
             name="reasons"
             render={() => (
               <FormItem>
-                <FormLabel>Reason</FormLabel>
-                <div className="flex flex-row flex-wrap gap-4">
-                  {REASONS.map((reason) => (
+                <FormLabel>Please select a reason for your visit</FormLabel>
+                <div className="grid auto-rows-fr grid-cols-4 grid-rows-2 gap-4">
+                  {reasons.map((reason) => (
                     <FormField
                       key={reason}
                       control={form.control}
                       name="reasons"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="h-full">
                           <FormLabel className="font-normal">
-                            <Card>
+                            <Card
+                              className={cn(
+                                // @ts-expect-error not specific enough generics
+                                field.value?.includes(reason) &&
+                                  "border-blue-500 bg-blue-100",
+                              )}
+                            >
                               <CardHeader className="flex flex-row items-center gap-2">
                                 <FormControl>
                                   <Checkbox
+                                    // @ts-expect-error not specific enough generics
                                     checked={field.value?.includes(reason)}
-                                    onCheckedChange={(checked) => {
+                                    onCheckedChange={(checked: boolean) => {
                                       return checked
                                         ? field.onChange([
                                             ...field.value,
@@ -110,15 +100,6 @@ export function ALCheckInForm({ person }: { person: Person }) {
                                 </FormControl>
                                 {reason}
                               </CardHeader>
-                              <CardContent>
-                                <Image
-                                  src={REASON_TO_IMAGE[reason]}
-                                  alt=""
-                                  width={250}
-                                  height={250}
-                                  className="pointer-events-none rounded-sm"
-                                />
-                              </CardContent>
                             </Card>
                           </FormLabel>
                         </FormItem>
@@ -130,9 +111,10 @@ export function ALCheckInForm({ person }: { person: Person }) {
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
-            name="reason_other"
+            name="reasonOther"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Other</FormLabel>
@@ -141,7 +123,23 @@ export function ALCheckInForm({ person }: { person: Person }) {
               </FormItem>
             )}
           />
-          <Button type="submit">Submit</Button>
+          <div className="flex gap-4">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? <Loading /> : "Submit"}
+            </Button>
+            <Button
+              onClick={() => router.back()}
+              variant={"secondary"}
+              type="button"
+              className="w-full"
+            >
+              Back
+            </Button>
+          </div>
         </form>
       </Form>
     </>

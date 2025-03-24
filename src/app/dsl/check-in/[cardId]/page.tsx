@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { CheckInForm } from "~/components/CheckInForm";
 import { getPerson } from "~/lib/sheets";
-import { ML_REASONS } from "~/schemas";
+import { DSL_REASONS } from "~/schemas";
 
 export default async function MLCheckInPage({
   params,
@@ -11,22 +11,22 @@ export default async function MLCheckInPage({
   // eslint-disable-next-line @typescript-eslint/await-thenable
   const { cardId } = await params; // nextjs 15 dynamicIO
   if (cardId.length !== 15) {
-    redirect("/ml");
+    redirect("/dsl");
   }
   const person = await getPerson(cardId);
   if (!person) {
-    const redirectUrl = encodeURI(`/ml/check-in/${cardId}`);
+    const redirectUrl = encodeURI(`/dsl/check-in/${cardId}`);
     redirect(`/new/${cardId}?redirect=${redirectUrl}`);
   }
   return (
     <>
       <CheckInForm
         person={person}
-        // TODO: move back to ml-checkins
-        sheetName="ml-checkins-new"
-        redirectUrl="/ml"
-        reasons={ML_REASONS}
-        schemaName="mlCheckInSchema"
+        // TODO: move back to al-checkins
+        sheetName="dsl-checkins-new"
+        redirectUrl="/dsl"
+        reasons={DSL_REASONS}
+        schemaName="dslCheckInSchema"
       />
     </>
   );

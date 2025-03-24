@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -20,33 +21,31 @@ import { Input } from "~/components/ui/input";
 const formSchema = z.object({
   cardId: z
     .string()
-    .min(15, {
-      message: "Card ID must be 15 numbers",
+    .trim()
+    .refine((value) => value.length === 15, {
+      message: "Card ID must be exactly 15 characters long",
     })
-    .max(15, {
-      message: "Card ID must be 15 numbers",
-    }),
+    .refine((value) => /^\d+$/.test(value), {
+      message: "Card ID must contain only numeric digits",
+    })
+    .refine((value) => value.startsWith("603305"), {
+      message: "Card ID must start with 603305 for Brandeis cards",
+    })
+    .transform((value) => value.replace(/\s/g, "")),
 });
-
-// function usePerson(cardId: string) {
-//   return useQuery({
-//     queryKey: ["person", cardId],
-//     queryFn: async () => {
-//       const res = await fetch(`/api/person/${cardId}`);
-//       if (!res.ok) throw new Error(res.statusText);
-//       return (await res.json()) as Person;
-//     },
-//   });
-// }
-//
+type FormSchema = z.infer<typeof formSchema>;
 
 export function CardIdForm({
   redirect, // must end with a "/"
 }: {
   redirect: string;
 }) {
+  if (!redirect.endsWith("/")) {
+    throw new Error("redirect must end with a /");
+  }
+
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       cardId: "",
@@ -55,7 +54,7 @@ export function CardIdForm({
   });
 
   const onSubmit = useCallback(
-    (values: z.infer<typeof formSchema>) => {
+    (values: FormSchema) => {
       console.log(values);
       router.push(redirect + values.cardId.toString());
     },
@@ -67,17 +66,19 @@ export function CardIdForm({
       if (name === "cardId") {
         const { cardId } = value;
         if (cardId?.length === 15) {
-          void form.handleSubmit(onSubmit)();
+          form
+            .trigger()
+            .then((isValid) => {
+              if (isValid) {
+                void form.handleSubmit(onSubmit)();
+              }
+            })
+            .catch((e) => console.error("Error submitting form " + e));
         }
       }
     });
     return () => subscription.unsubscribe();
   }, [form, form.watch, onSubmit]);
-
-  useEffect(() => {
-    const interval = setInterval(() => form.setFocus("cardId"), 30 * 1000);
-    return () => clearInterval(interval);
-  }, [form]);
 
   return (
     <Form {...form}>
@@ -86,6 +87,7 @@ export function CardIdForm({
           control={form.control}
           name="cardId"
           render={({ field }) => {
+            const { onChange, onBlur, ...rest } = field;
             return (
               <FormItem>
                 <FormLabel>Brandeis ID</FormLabel>
@@ -97,12 +99,20 @@ export function CardIdForm({
                       form.formState.isSubmitted &&
                       (form.formState.isValid || form.formState.isValidating)
                     }
-                    placeholder="123456789101112"
-                    {...field}
+                    placeholder="603305000000000"
+                    onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                      if (e.currentTarget.value.length <= 15)
+                        return onChange(e);
+                    }}
+                    onBlur={() => {
+                      onBlur();
+                      form.setFocus("cardId");
+                    }}
+                    {...rest}
                   />
                 </FormControl>
                 <FormDescription>
-                  This is your Brandies ID card number
+                  This is your Brandeis ID card number
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -110,15 +120,30 @@ export function CardIdForm({
           }}
         />
 
-        <Button
-          type="submit"
-          disabled={
-            form.formState.isSubmitted &&
-            (form.formState.isValid || form.formState.isValidating)
-          }
-        >
-          Submit
-        </Button>
+        <div className="flex gap-4">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={
+              form.formState.isSubmitted &&
+              (form.formState.isValid || form.formState.isValidating)
+            }
+          >
+            {form.formState.isLoading ? (
+              <Loader className="animate-spin" />
+            ) : (
+              "Submit"
+            )}
+          </Button>
+          <Button
+            type="button"
+            className="w-full"
+            variant={"secondary"}
+            onClick={() => window.location.reload()}
+          >
+            Clear
+          </Button>
+        </div>
       </form>
     </Form>
   );

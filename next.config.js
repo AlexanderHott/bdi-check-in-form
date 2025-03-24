@@ -12,6 +12,10 @@ const config = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    ppr: true,
+    reactCompiler: true,
+  },
 };
 
 export default config;

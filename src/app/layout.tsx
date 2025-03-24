@@ -14,9 +14,17 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
+      <head>
+        {/*eslint-disable-next-line @next/next/no-sync-scripts*/}
+        {/* <script */}
+        {/*   // async */}
+        {/*   crossOrigin="anonymous" */}
+        {/*   src="//unpkg.com/react-scan/dist/auto.global.js" */}
+        {/* /> */}
+      </head>
       <body>
-        <main className="flex h-screen w-screen justify-center">
-          <div className="w-full max-w-2xl pt-16">{children}</div>
+        <main className="flex h-full justify-center">
+          <div className="w-full max-w-4xl p-4 xl:p-16">{children}</div>
         </main>
       </body>
     </html>

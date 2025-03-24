@@ -19,6 +19,11 @@ export default function HomePage() {
         desc="Soldering, Electronics..."
         href="/al"
       />
+      <LocationCard
+        title="Digital Scholarship Lab"
+        desc="Specialized computing, ..."
+        href="/dsl"
+      />
     </div>
   );
 }
@@ -34,7 +39,7 @@ function LocationCard({
 }) {
   return (
     <Link href={href}>
-      <Card>
+      <Card className="group">
         <CardHeader>
           <div className="flex w-full items-center justify-between">
             <div>
@@ -47,7 +52,7 @@ function LocationCard({
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-6"
+              className="size-6 transition-transform duration-150 ease-in-out group-hover:translate-x-2"
             >
               <path
                 strokeLinecap="round"
