@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { postNewPerson } from "~/lib/db";
+import { postNewPerson } from "~/lib/actions";
 import {
   ETHNICITIES,
   GENDERS,

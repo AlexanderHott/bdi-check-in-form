@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { postCheckIn } from "~/lib/db";
+import { postCheckIn } from "~/lib/actions";
 import { cn } from "~/lib/utils";
 import { checkInSchemas } from "~/schemas";
 import { useRouter } from "next/navigation";

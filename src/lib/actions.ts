@@ -2,7 +2,8 @@
 
 import "server-only";
 
-import type { CheckIn, Person, } from "~/schemas";
+import type { CheckIn, Person } from "~/schemas";
+
 import { getDb } from "./db";
 
 export async function getPerson(cardId: string): Promise<Person | null> {

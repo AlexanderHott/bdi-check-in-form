@@ -1,10 +1,10 @@
 /**
  * This file contains the validation schemas for the app.
- * 
+ *
  * Since data comes from both a form and from google sheets, we have to double model the data
- * - one for the in-progress form where users can type out extra answers in the "other fields" 
+ * - one for the in-progress form where users can type out extra answers in the "other fields"
  * - one for the tuple respones that we get back from google sheets
- * 
+ *
  * The tuple respone is transformed into an object as part of the parsing (done via zod.transform).
  */
 import { isValid, parse } from "date-fns";
