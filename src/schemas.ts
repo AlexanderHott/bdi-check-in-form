@@ -1,3 +1,4 @@
+import { isValid, parse } from "date-fns";
 import { z } from "zod";
 
 export const GRADUATE_STATUS = [
@@ -108,31 +109,148 @@ export const newPersonSchema = z
 
 export type NewPerson = z.infer<typeof newPersonSchema>;
 
-export const personSchema = z
-  .object({
-    cardId: z.string().length(15),
-    email: z.string().email(),
-    name: z.string().min(1),
-    graduateStatus: z.enum(GRADUATE_STATUS).or(z.string()),
-    graduatingYear: z.string().optional(),
-    graduateResearchStatus: z.string().optional(),
-    majors: z.array(z.enum(MAJORS).or(z.string())),
-    ethnicities: z.array(z.enum(ETHNICITIES).or(z.string())),
-    gender: z.enum(GENDERS).or(z.string()),
-  })
+const FORMAT = "MM/dd/yyyy HH:mm:ss";
+
+const customDateSchema = z
+  .string()
   .refine(
-    (data) =>
-      !(
-        data.graduateStatus.includes("Student") &&
-        data.graduatingYear === undefined
-      ),
+    (val) => {
+      const parsed = parse(val, FORMAT, new Date());
+      return isValid(parsed);
+    },
+    (val) => {
+      return {
+        message: `Invalid date format, expected ${FORMAT}, got ${val}`,
+      };
+    },
+  )
+  .transform((val) => parse(val, FORMAT, new Date()));
+
+// transform must be after all validation (refine, pipe, etc.)
+// https://github.com/colinhacks/zod/issues/2243
+// https://github.com/colinhacks/zod/issues/2192
+// https://github.com/colinhacks/zod/issues/2113
+export const personSchema = z
+  .tuple([
+    z.string().length(15), // cardId
+    z.string().email(), // email
+    z.string().min(1), // name
+    z.enum(GRADUATE_STATUS).or(z.string()), // graduateStatus
+    z.string().optional(), // graduatingYear
+    z.string().optional(), // graduateResearch
+    z
+      .string()
+      .transform((majorString) => majorString.split(";"))
+      .pipe(z.array(z.enum(MAJORS).or(z.string()))), // majors
+    z
+      .string()
+      .transform((ethnicityString) => ethnicityString.split(";"))
+      .pipe(z.array(z.enum(ETHNICITIES).or(z.string()))), // ethnicities
+    z.enum(GENDERS).or(z.string()), // gender
+    customDateSchema,
+  ])
+  .refine(
+    ([
+      cardId,
+      email,
+      name,
+      graduateStatus,
+      graduatingYear,
+      graduateResearch,
+      majors,
+      ethnicities,
+      gender,
+      createdAt,
+    ]) => {
+      // console.log("refine");
+      // console.log(graduateStatus);
+      return !(
+        graduateStatus.includes("Student") &&
+        graduatingYear === undefined
+      );
+    },
     {
       message: "Graduation Year is required when you are a student",
       path: ["graduateStatus"],
     },
-  );
+  )
+  .transform(
+    ([
+      cardId,
+      email,
+      name,
+      graduateStatus,
+      graduatingYear,
+      graduateResearch,
+      majors,
+      ethnicities,
+      gender,
+      createdAt,
+    ]) => {
+      return {
+        cardId,
+        email,
+        name,
+        graduateStatus,
+        graduatingYear,
+        graduateResearch,
+        majors,
+        ethnicities,
+        gender,
+        createdAt,
+      };
+    },
+  )
 
 export type Person = z.infer<typeof personSchema>;
+
+export const checkInRowSchema = z
+  .tuple([
+    z.string().min(15), // cardId
+    z.string().email(), // email
+    z.string().min(1), // name
+    z.enum(GRADUATE_STATUS).or(z.string()), // graduateStatus
+    z.string().optional(), // graduatingYear
+    z.string().optional(), // graduateResearch
+    z
+      .string()
+      .transform((majorString) => majorString.split(";"))
+      .pipe(z.array(z.enum(MAJORS).or(z.string()))), // majors
+    z
+      .string()
+      .transform((ethnicityString) => ethnicityString.split(";"))
+      .pipe(z.array(z.enum(ETHNICITIES).or(z.string()))), // ethnicities
+    z.enum(GENDERS).or(z.string()), // gender
+    z.string().transform((reasonString) => reasonString.split(";")), // reasons
+    customDateSchema,
+  ])
+  .transform(
+    ([
+      cardId,
+      email,
+      name,
+      graduateStatus,
+      graduatingYear,
+      graduateResearch,
+      majors,
+      ethnicities,
+      gender,
+      reasons,
+      createdAt,
+    ]) => ({
+      cardId,
+      email,
+      name,
+      graduateStatus,
+      graduatingYear,
+      graduateResearch,
+      majors,
+      ethnicities,
+      gender,
+      reasons,
+      createdAt,
+    }),
+  );
 
 export const ML_REASONS = [
   "Workshop or Event",
@@ -168,7 +286,7 @@ export const DSL_REASONS = [
 ] as const;
 
 /**
- * Creates a check in schema.
+ * Creates a check-in schema.
  *
  * @param reasons a `const readonly` array of strings with at least 1 element.
  */
@@ -204,7 +322,7 @@ export type MlCheckIn = z.infer<typeof mlCheckInSchema>;
 export type AlCheckIn = z.infer<typeof alCheckInSchema>;
 export type DslCheckIn = z.infer<typeof dslCheckInSchema>;
 
-export const checkInSchmas = {
+export const checkInSchemas = {
   mlCheckInSchema,
   alCheckInSchema,
   dslCheckInSchema,

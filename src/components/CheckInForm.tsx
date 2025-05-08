@@ -1,8 +1,10 @@
 "use client";
-import { postCheckIn } from "~/lib/sheets";
+
+import type { CheckIn, Person } from "~/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { Button } from "~/components/ui/button";
+import { Card, CardHeader } from "~/components/ui/card";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -11,13 +13,14 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { useRouter } from "next/navigation";
-import { Card, CardHeader } from "~/components/ui/card";
-import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
-import { type Person, type CheckIn, checkInSchmas } from "~/schemas";
-import { type z } from "zod";
+import { postCheckIn } from "~/lib/sheets";
 import { cn } from "~/lib/utils";
+import { checkInSchemas } from "~/schemas";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { type z } from "zod";
+
 import { Loading } from "./Loading";
 import { TimeOut } from "./TimeOut";
 
@@ -29,13 +32,13 @@ export function CheckInForm({
   sheetName,
 }: {
   person: Person;
-  schemaName: keyof typeof checkInSchmas;
+  schemaName: keyof typeof checkInSchemas;
   reasons: Readonly<CheckIn["reasons"]>;
   redirectUrl: string;
   sheetName: string;
 }) {
   const router = useRouter();
-  const schema = checkInSchmas[schemaName];
+  const schema = checkInSchemas[schemaName];
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {

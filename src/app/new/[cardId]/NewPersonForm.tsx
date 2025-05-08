@@ -1,9 +1,17 @@
 "use client";
 
+import type { NewPerson } from "~/schemas";
+import { useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Loading } from "~/components/Loading";
+import { TimeOut } from "~/components/TimeOut";
 import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "~/components/ui/collapsible";
 import {
   Form,
   FormControl,
@@ -12,6 +20,8 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -19,17 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Input } from "~/components/ui/input";
-import { RadioGroupItem, RadioGroup } from "~/components/ui/radio-group";
 import { postNewPerson } from "~/lib/sheets";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "~/components/ui/collapsible";
-import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
-import { useRef, useState } from "react";
-import { Checkbox } from "~/components/ui/checkbox";
 import {
   ETHNICITIES,
   GENDERS,
@@ -37,10 +37,10 @@ import {
   MAJORS,
   newPersonSchema,
   YEARS,
-  type NewPerson,
 } from "~/schemas";
-import { Loading } from "~/components/Loading";
-import { TimeOut } from "~/components/TimeOut";
+import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
 
 export function NewPersonForm({ cardId }: { cardId: string }) {
   const router = useRouter();

@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
 import { CheckInForm } from "~/components/CheckInForm";
 import { getPerson } from "~/lib/sheets";
 import { ML_REASONS } from "~/schemas";
+import { redirect } from "next/navigation";
 
 export default async function MLCheckInPage({
   params,

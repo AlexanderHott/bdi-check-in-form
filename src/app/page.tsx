@@ -1,10 +1,11 @@
-import Link from "next/link";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import Link from "next/link";
+
 export default function HomePage() {
   return (
     <div className="flex flex-col gap-8">
