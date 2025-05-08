@@ -79,14 +79,14 @@ class SheetTable<Row, Key> {
     return rows.find((row) => this.converter.getKey(row) === key) ?? null;
   }
 
-  async set(rows: Row[]): Promise<void> {
+  async add(row: Row): Promise<void> {
     await this.sheetsApi.spreadsheets.values.update({
       spreadsheetId: env.SHEET_ID,
       auth: this.auth,
       range: this.tableName,
-      valueInputOption: "USER_ENTERED",
+      valueInputOption: "USER_ENTERED", // WARNING: no sanitization
       requestBody: {
-        values: rows.map(this.converter.serialize),
+        values: [this.converter.serialize(row)],
       },
     });
   }

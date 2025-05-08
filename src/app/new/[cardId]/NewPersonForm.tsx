@@ -1,7 +1,7 @@
 "use client";
 
-import type { NewPerson } from "~/schemas";
-import { useRef, useState } from "react";
+import type { z } from "zod";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loading } from "~/components/Loading";
 import { TimeOut } from "~/components/TimeOut";
@@ -29,23 +29,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { postNewPerson } from "~/lib/sheets";
+import { postNewPerson } from "~/lib/db";
 import {
   ETHNICITIES,
   GENDERS,
   GRADUATE_STATUS,
   MAJORS,
-  newPersonSchema,
+  newPersonFormSchema,
+  newPersonFormSchemaToPerson,
   YEARS,
 } from "~/schemas";
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 
+type NewPersonFormSchema = z.infer<typeof newPersonFormSchema>;
+
 export function NewPersonForm({ cardId }: { cardId: string }) {
   const router = useRouter();
-  const form = useForm<NewPerson>({
-    resolver: zodResolver(newPersonSchema),
+  const form = useForm<NewPersonFormSchema>({
+    resolver: zodResolver(newPersonFormSchema),
     defaultValues: {
       cardId: cardId,
       email: "",
@@ -77,11 +80,12 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect");
 
-  async function onSubmit(value: NewPerson) {
-    console.log("new person", value);
-    await postNewPerson(value);
-    const decodedRedirectUrl = decodeURI(redirectUrl ?? "/");
-    router.push(decodedRedirectUrl);
+  async function onSubmit(value: NewPersonFormSchema) {
+    const person = newPersonFormSchemaToPerson(value);
+    await postNewPerson(person);
+
+    const redirectUrlDecoded = decodeURI(redirectUrl ?? "/");
+    router.push(redirectUrlDecoded);
   }
 
   return (

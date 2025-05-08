@@ -1,5 +1,29 @@
+/**
+ * This file contains the validation schemas for the app.
+ * 
+ * Since data comes from both a form and from google sheets, we have to double model the data
+ * - one for the in-progress form where users can type out extra answers in the "other fields" 
+ * - one for the tuple respones that we get back from google sheets
+ * 
+ * The tuple respone is transformed into an object as part of the parsing (done via zod.transform).
+ */
 import { isValid, parse } from "date-fns";
 import { z } from "zod";
+
+const FORMAT = "MM/dd/yyyy HH:mm:ss";
+
+const customDateSchema = z
+  .string()
+  .refine(
+    (val) => {
+      const parsed = parse(val, FORMAT, new Date());
+      return isValid(parsed);
+    },
+    (val) => ({
+      message: `Invalid date format, expected ${FORMAT}, got ${val}`,
+    }),
+  )
+  .transform((val) => parse(val, FORMAT, new Date()));
 
 export const GRADUATE_STATUS = [
   "Undergraduate Student",
@@ -42,18 +66,19 @@ export const YEARS = Array(5)
   .fill(0)
   .map((_, i) => (new Date().getFullYear() + i).toString());
 
-export const newPersonSchema = z
+// Empty strings are "null values"
+export const newPersonFormSchema = z
   .object({
     cardId: z.string().length(15),
     email: z.string().email(),
     name: z
       .string()
-      .min(1, { message: "Name must contain at least 1 character(s)" })
+      .min(1, { message: "Name must contain at least 1 character" })
       .regex(/^[A-Za-z.,\s]+$/, "Only alphabetical characters are allowed"),
     graduateStatus: z.enum(GRADUATE_STATUS),
-    graduateStatusOther: z.string().optional(),
-    graduatingYear: z.string().optional(),
-    graduateResearchStatus: z.string().optional(),
+    graduateStatusOther: z.string(),
+    graduatingYear: z.string(),
+    graduateResearchStatus: z.string(),
     majors: z
       .array(z.enum(MAJORS))
       .min(1, { message: "Please select at least 1 major" }),
@@ -63,14 +88,17 @@ export const newPersonSchema = z
       .min(1, { message: "Please select at least 1 ethnicity" }),
     ethnicityOther: z.string(),
     gender: z.enum(GENDERS),
-    genderOther: z.string().optional(),
+    genderOther: z.string(),
   })
   // NOTE: return false to signify failure
   .refine(
     (data) =>
       !(
-        data.graduateStatus.includes("Student") &&
-        data.graduatingYear === undefined
+        // read as: "this fails if ..."
+        (
+          data.graduateStatus.includes("Student") &&
+          data.graduatingYear === undefined
+        )
       ),
     {
       message: "Graduation Year is required when you are a student",
@@ -84,7 +112,7 @@ export const newPersonSchema = z
         data.majorOther.length === 0
       ),
     {
-      message: "Major must contain at least 1 character(s)",
+      message: "You must select at least 1 major",
       path: ["majorOther"],
     },
   )
@@ -95,36 +123,52 @@ export const newPersonSchema = z
           0 && data.ethnicityOther.length === 0
       ),
     {
-      message: "Ethnicity must contain at least 1 character(s)",
+      message: "You must select at least 1 ethnicity option",
       path: ["ethnicityOther"],
     },
   )
   .refine(
     (data) => !(data.gender === "Other" && data.genderOther?.length === 0),
     {
-      message: "Gender must contain at least 1 character(s)",
+      message: "You must select a gender option",
       path: ["genderOther"],
     },
   );
 
-export type NewPerson = z.infer<typeof newPersonSchema>;
+export function newPersonFormSchemaToPerson(
+  data: z.infer<typeof newPersonFormSchema>,
+): Person {
+  const majors: string[] = data.majors.filter((major) => major !== "Other");
+  if (data.majorOther) {
+    majors.push(`other:${data.majorOther}`);
+  }
 
-const FORMAT = "MM/dd/yyyy HH:mm:ss";
+  const ethnicities: string[] = data.ethnicities.filter(
+    (ethnicity) => ethnicity !== "Other",
+  );
+  if (data.ethnicityOther) {
+    ethnicities.push(`other:${data.ethnicityOther}`);
+  }
 
-const customDateSchema = z
-  .string()
-  .refine(
-    (val) => {
-      const parsed = parse(val, FORMAT, new Date());
-      return isValid(parsed);
-    },
-    (val) => {
-      return {
-        message: `Invalid date format, expected ${FORMAT}, got ${val}`,
-      };
-    },
-  )
-  .transform((val) => parse(val, FORMAT, new Date()));
+  let graduateStatus: string = data.graduateStatus;
+  if (data.graduateStatusOther) {
+    graduateStatus = `other:${data.graduateStatusOther}`;
+  }
+
+  let gender: string = data.gender;
+  if (data.genderOther) {
+    gender = `other:${data.genderOther}`;
+  }
+
+  return {
+    ...data,
+    gender,
+    majors,
+    ethnicities,
+    graduateStatus,
+    createdAt: new Date(),
+  };
+}
 
 // transform must be after all validation (refine, pipe, etc.)
 // https://github.com/colinhacks/zod/issues/2243
@@ -137,7 +181,7 @@ export const personSchema = z
     z.string().min(1), // name
     z.enum(GRADUATE_STATUS).or(z.string()), // graduateStatus
     z.string().optional(), // graduatingYear
-    z.string().optional(), // graduateResearch
+    z.string().optional(), // graduateResearchStatus
     z
       .string()
       .transform((majorString) => majorString.split(";"))
@@ -151,22 +195,21 @@ export const personSchema = z
   ])
   .refine(
     ([
-      cardId,
-      email,
-      name,
+      _cardId,
+      _email,
+      _name,
       graduateStatus,
       graduatingYear,
-      graduateResearch,
-      majors,
-      ethnicities,
-      gender,
-      createdAt,
+      _graduateResearchStatus,
+      _majors,
+      _ethnicities,
+      _gender,
+      _createdAt,
     ]) => {
       // console.log("refine");
       // console.log(graduateStatus);
       return !(
-        graduateStatus.includes("Student") &&
-        graduatingYear === undefined
+        graduateStatus.includes("Student") && graduatingYear === undefined
       );
     },
     {
@@ -181,7 +224,7 @@ export const personSchema = z
       name,
       graduateStatus,
       graduatingYear,
-      graduateResearch,
+      graduateResearchStatus,
       majors,
       ethnicities,
       gender,
@@ -193,64 +236,16 @@ export const personSchema = z
         name,
         graduateStatus,
         graduatingYear,
-        graduateResearch,
+        graduateResearchStatus,
         majors,
         ethnicities,
         gender,
         createdAt,
       };
     },
-  )
+  );
 
 export type Person = z.infer<typeof personSchema>;
-
-export const checkInRowSchema = z
-  .tuple([
-    z.string().min(15), // cardId
-    z.string().email(), // email
-    z.string().min(1), // name
-    z.enum(GRADUATE_STATUS).or(z.string()), // graduateStatus
-    z.string().optional(), // graduatingYear
-    z.string().optional(), // graduateResearch
-    z
-      .string()
-      .transform((majorString) => majorString.split(";"))
-      .pipe(z.array(z.enum(MAJORS).or(z.string()))), // majors
-    z
-      .string()
-      .transform((ethnicityString) => ethnicityString.split(";"))
-      .pipe(z.array(z.enum(ETHNICITIES).or(z.string()))), // ethnicities
-    z.enum(GENDERS).or(z.string()), // gender
-    z.string().transform((reasonString) => reasonString.split(";")), // reasons
-    customDateSchema,
-  ])
-  .transform(
-    ([
-      cardId,
-      email,
-      name,
-      graduateStatus,
-      graduatingYear,
-      graduateResearch,
-      majors,
-      ethnicities,
-      gender,
-      reasons,
-      createdAt,
-    ]) => ({
-      cardId,
-      email,
-      name,
-      graduateStatus,
-      graduatingYear,
-      graduateResearch,
-      majors,
-      ethnicities,
-      gender,
-      reasons,
-      createdAt,
-    }),
-  );
 
 export const ML_REASONS = [
   "Workshop or Event",
@@ -298,6 +293,7 @@ export function makeCheckInSchema<
       person: personSchema,
       reasons: z.array(z.enum(reasons)),
       reasonOther: z.string(),
+      createdAt: customDateSchema,
     })
     .refine(
       (data) => {

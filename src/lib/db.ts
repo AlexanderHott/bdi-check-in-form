@@ -1,10 +1,38 @@
 "use server";
 
-import type { CheckIn, Person } from "~/schemas";
-import { personSchema } from "~/schemas";
+import "server-only";
 
-import type { ScheetsSchema } from "./sheets";
-import { Sheets } from "./sheets";
+import type { ScheetsSchema } from "~/lib/sheets";
+import type {
+  AlCheckIn,
+  CheckIn,
+  DslCheckIn,
+  MlCheckIn,
+  Person,
+} from "~/schemas";
+import { Sheets } from "~/lib/sheets";
+import {
+  alCheckInSchema,
+  dslCheckInSchema,
+  mlCheckInSchema,
+  personSchema,
+} from "~/schemas";
+
+function serializeCheckIn(checkIn: CheckIn) {
+  return [
+    checkIn.person.cardId,
+    checkIn.person.email,
+    checkIn.person.name,
+    checkIn.person.graduateStatus,
+    checkIn.person.graduatingYear ?? "",
+    checkIn.person.graduateResearchStatus ?? "",
+    checkIn.person.majors.join(";"),
+    checkIn.person.ethnicities.join(";"),
+    checkIn.person.gender,
+    checkIn.reasons.join(";"),
+    formatDateET(checkIn.createdAt),
+  ];
+}
 
 const tables = {
   "people-new": {
@@ -13,14 +41,33 @@ const tables = {
       row.email,
       row.name,
       row.graduateStatus,
-      row.graduatingYear,
-      row.graduateResearch,
+      row.graduatingYear ?? "",
+      row.graduateResearchStatus ?? "",
       row.majors.join(";"),
       row.ethnicities.join(";"),
       row.gender,
+      formatDateET(row.createdAt),
     ],
     deserialize: (data: unknown[]) => personSchema.safeParse(data).data ?? null,
     getKey: (row: Person) => row.cardId,
+  },
+  "al-checkins-new": {
+    serialize: (row: AlCheckIn) => serializeCheckIn(row),
+    deserialize: (data: unknown[]) =>
+      alCheckInSchema.safeParse(data).data ?? null,
+    getKey: (row: AlCheckIn) => row.person.cardId,
+  },
+  "ml-checkins-new": {
+    serialize: (row: MlCheckIn) => serializeCheckIn(row),
+    deserialize: (data: unknown[]) =>
+      mlCheckInSchema.safeParse(data).data ?? null,
+    getKey: (row: MlCheckIn) => row.person.cardId,
+  },
+  "dsl-checkins-new": {
+    serialize: (row: DslCheckIn) => serializeCheckIn(row),
+    deserialize: (data: unknown[]) =>
+      dslCheckInSchema.safeParse(data).data ?? null,
+    getKey: (row: DslCheckIn) => row.person.cardId,
   },
 } as const satisfies ScheetsSchema;
 
@@ -41,96 +88,29 @@ const formatDateET = (date: Date) => {
     .replace(/\//g, "/")
     .replaceAll(",", "");
 };
-function getTimestamp() {
-  return formatDateET(new Date());
-}
 
 export async function getPerson(cardId: string): Promise<Person | null> {
   const db = getDb();
   return await db.table("people-new").get(cardId);
 }
 
-export async function postCheckIn(checkIn: CheckIn, table: string) {
-  console.log("checkin", checkIn);
-  // const auth = authGoogle();
-  // const sheet = google.sheets("v4");
-
-  const now = getTimestamp();
+export async function postCheckIn(
+  checkIn: CheckIn,
+  table: "al-checkins-new" | "ml-checkins-new" | "dsl-checkins-new",
+) {
+  const db = getDb();
 
   const reasons: string[] = checkIn.reasons;
   if (checkIn.reasonOther) {
     reasons.push(checkIn.reasonOther);
   }
+  checkIn.createdAt = new Date();
 
-  await sheet.spreadsheets.values.append({
-    spreadsheetId: env.SHEET_ID,
-    auth: auth,
-    range: table,
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: [
-        [
-          checkIn.person.cardId,
-          checkIn.person.email,
-          checkIn.person.name,
-          checkIn.person.graduateStatus,
-          checkIn.person.graduatingYear ?? "",
-          checkIn.person.graduateResearchStatus ?? "",
-          checkIn.person.majors.join(";"),
-          checkIn.person.ethnicities.join(";"),
-          checkIn.person.gender,
-          reasons.join(";"),
-          now,
-        ],
-      ],
-    },
-  });
+  await db.table(table).add(checkIn);
 }
 
-export async function postNewPerson(person: NewPerson) {
-  console.log("new person", person);
-  const auth = authGoogle();
-  const sheet = google.sheets("v4");
+export async function postNewPerson(person: Person) {
+  const db = getDb();
 
-  const now = getTimestamp();
-
-  const majors: string[] = person.majors.filter((maj) => maj !== "Other");
-  if (person.majorOther) {
-    majors.push(`other:${person.majorOther}`);
-  }
-
-  const ethnicities: string[] = person.ethnicities.filter(
-    (eth) => eth !== "Other",
-  );
-  if (person.ethnicityOther) {
-    ethnicities.push(`other:${person.ethnicityOther}`);
-  }
-
-  let graduateStatus: string = person.graduateStatus;
-  if (person.graduateStatusOther) {
-    graduateStatus = person.graduateStatusOther;
-  }
-
-  await sheet.spreadsheets.values.append({
-    spreadsheetId: env.SHEET_ID,
-    auth: auth,
-    range: "people-new",
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: [
-        [
-          person.cardId,
-          person.email,
-          person.name,
-          graduateStatus,
-          person.graduatingYear ?? "",
-          person.graduateResearchStatus ?? "",
-          majors.join(";"),
-          ethnicities.join(";"),
-          person.gender,
-          now,
-        ],
-      ],
-    },
-  });
+  await db.table("people-new").add(person);
 }

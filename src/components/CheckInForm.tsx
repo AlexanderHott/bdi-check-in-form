@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { postCheckIn } from "~/lib/sheets";
+import { postCheckIn } from "~/lib/db";
 import { cn } from "~/lib/utils";
 import { checkInSchemas } from "~/schemas";
 import { useRouter } from "next/navigation";
@@ -35,7 +35,7 @@ export function CheckInForm({
   schemaName: keyof typeof checkInSchemas;
   reasons: Readonly<CheckIn["reasons"]>;
   redirectUrl: string;
-  sheetName: string;
+  sheetName: "al-checkins-new" | "ml-checkins-new" | "dsl-checkins-new";
 }) {
   const router = useRouter();
   const schema = checkInSchemas[schemaName];
