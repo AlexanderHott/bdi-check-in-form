@@ -1,5 +1,5 @@
 import { CheckInForm } from "~/components/CheckInForm";
-import { getDb } from "~/lib/db";
+import { getPerson } from "~/lib/actions";
 import { DSL_REASONS } from "~/schemas";
 import { redirect } from "next/navigation";
 
@@ -13,8 +13,7 @@ export default async function MLCheckInPage({
   if (cardId.length !== 15) {
     redirect("/dsl");
   }
-  const db = getDb();
-  const person = await db.table("people-new").get(cardId);
+  const person = await getPerson(cardId);
   if (!person) {
     const redirectUrl = encodeURI(`/dsl/check-in/${cardId}`);
     redirect(`/new/${cardId}?redirect=${redirectUrl}`);
