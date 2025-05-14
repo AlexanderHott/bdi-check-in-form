@@ -80,7 +80,7 @@ class SheetTable<Row, Key> {
   }
 
   async add(row: Row): Promise<void> {
-    await this.sheetsApi.spreadsheets.values.update({
+    await this.sheetsApi.spreadsheets.values.append({
       spreadsheetId: env.SHEET_ID,
       auth: this.auth,
       range: this.tableName,

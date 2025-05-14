@@ -8,11 +8,6 @@ import { TimeOut } from "~/components/TimeOut";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "~/components/ui/collapsible";
-import {
   Form,
   FormControl,
   FormField,
@@ -30,6 +25,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { postNewPerson } from "~/lib/actions";
+import { cn } from "~/lib/utils";
 import {
   ETHNICITIES,
   GENDERS,
@@ -39,7 +35,7 @@ import {
   newPersonFormSchemaToPerson,
   YEARS,
 } from "~/schemas";
-import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 
@@ -194,7 +190,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormItem>
                   <FormLabel>Other</FormLabel>
                   <FormControl>
-                    <Input placeholder="Graduate Status" {...field} />
+                    <Input placeholder="What best describes you?" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -333,7 +329,10 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormItem>
                   <FormLabel>Other major</FormLabel>
                   <FormControl>
-                    <Input placeholder="major" {...field} />
+                    <Input
+                      placeholder="Which degree or department best describes you?"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -410,7 +409,10 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormItem>
                   <FormLabel>Other ethnicity</FormLabel>
                   <FormControl>
-                    <Input placeholder="ethnicity" {...field} />
+                    <Input
+                      placeholder="Which race/ethnicity best describes you?"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -457,7 +459,10 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                   <FormLabel>Other Gender</FormLabel>
                   <FormControl>
                     <FormControl>
-                      <Input placeholder="Other" {...field} />
+                      <Input
+                        placeholder="Which gender best describes you?"
+                        {...field}
+                      />
                     </FormControl>
                   </FormControl>
                   <FormMessage />
@@ -500,23 +505,34 @@ function RadioItem({ value }: { value: string }) {
 }
 
 function WhyDoWeAsk() {
+  const [isExpanded, setIsExpanded] = useState(false);
   return (
-    <Collapsible>
-      <CollapsibleTrigger className="flex items-center gap-1 text-muted-foreground">
-        Why do we ask for this? <ChevronsUpDown size={16} />
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <p className="">
+    <div className="w-full">
+      <button
+        type="button"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        aria-expanded={isExpanded}
+      >
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 transition-transform duration-200",
+            isExpanded ? "rotate-180" : "",
+          )}
+        />
+        <span className="underline underline-offset-4">
+          Why do we ask for this?
+        </span>
+      </button>
+
+      {isExpanded && (
+        <div className="mt-2 text-sm text-muted-foreground pl-5 border-l-2 border-muted animate-in fade-in slide-in-from-top-1 duration-200">
           At Brandeis Design and Innovation, we are committed to building a
           diverse and inclusive community. Collecting demographic information
           helps us to measure our efforts toward these goals!
-        </p>
-        <p>
-          All demographic questions are optional - but it helps us if you are
-          willing to answer them!
-        </p>
-      </CollapsibleContent>
-    </Collapsible>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -530,17 +546,19 @@ const scrollDown = () => {
 
 function ScrollButtons() {
   return (
-    <div className="fixed bottom-4 right-4">
+    <div className="fixed bottom-4 right-4 z-50">
       <div className="flex flex-col gap-2">
         <button
           onClick={scrollUp}
-          className="flex h-32 w-32 items-center justify-center rounded-full border bg-white"
+          className="flex h-32 w-32 items-center justify-center rounded-full border  backdrop-blur-sm"
+          aria-label="Scroll up"
         >
           <ArrowUp size={64} />
         </button>
         <button
           onClick={scrollDown}
-          className="flex h-32 w-32 items-center justify-center rounded-full border bg-white"
+          className="flex h-32 w-32 items-center justify-center rounded-full border  backdrop-blur-sm"
+          aria-label="Scroll down"
         >
           <ArrowDown size={64} />
         </button>
