@@ -9,7 +9,7 @@ Check in to a BDI space, allowing us to make data-driven improvements.
 - create new credentials for an "application" (not user facing program)
 - find email with the credentials
 - create a sheet and invite the email to it
-- create the tables `al-checkins`, `ml-checkins`, `dsl-checkins`, and `people`
+- create the tables `al-checkins`, `ml-checkins`, `dsl-checkins`, and `people` (OUTDATED, check code)
 - when deploying, update `SHEET_ID`, and credentials environment variables
 
 ## Contributing
