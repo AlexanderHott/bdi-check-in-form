@@ -36,15 +36,17 @@ const formSchema = z.object({
 });
 type FormSchema = z.infer<typeof formSchema>;
 
+type EndsWithSlash = `${string}/`;
+
 export function CardIdForm({
   redirect, // must end with a "/"
   checkinTable,
 }: {
-  redirect: string;
+  redirect: EndsWithSlash;
   checkinTable: "al-checkins-new" | "ml-checkins-new" | "dsl-checkins-new";
 }) {
   if (!redirect.endsWith("/")) {
-    throw new Error("redirect must end with a /");
+    throw new Error("redirect prop must end with a /");
   }
 
   const router = useRouter();
@@ -63,6 +65,7 @@ export function CardIdForm({
         checkinTable,
         values.cardId,
       );
+      console.log("checkin", checkin);
 
       if (checkin === null) {
         router.push(redirect + values.cardId.toString());
@@ -75,21 +78,20 @@ export function CardIdForm({
 
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
-      if (name === "cardId") {
-        const { cardId } = value;
-        if (cardId?.length === 15) {
-          form
-            .trigger()
-            .then((isValid) => {
-              if (isValid) {
-                void form.handleSubmit(onSubmit)();
-              }
-            })
-            .catch((e: unknown) => {
-              console.error(`Error submitting form ${String(e)}`);
-            });
-        }
-      }
+      if (name !== "cardId") return;
+      const { cardId } = value;
+      if (cardId?.length !== 15) return;
+
+      form
+        .trigger()
+        .then((isValid) => {
+          if (isValid) {
+            void form.handleSubmit(onSubmit)();
+          }
+        })
+        .catch((e: unknown) => {
+          console.error(`Error submitting form ${String(e)}`);
+        });
     });
     return () => {
       subscription.unsubscribe();

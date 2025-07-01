@@ -2,7 +2,7 @@
 
 import "server-only";
 
-import type { CheckIn, Person } from "~/schemas";
+import type { CheckIn, NewCheckIn, Person } from "~/schemas";
 
 import { getDb } from "../db";
 
@@ -41,15 +41,14 @@ export async function getRecentCheckin(
 }
 
 export async function postCheckIn(
-  checkIn: CheckIn,
+  checkIn: NewCheckIn,
   table: "al-checkins-new" | "ml-checkins-new" | "dsl-checkins-new",
 ) {
   "use server";
   const db = getDb();
 
-  const reasons: string[] = checkIn.reasons;
   if (checkIn.reasonOther) {
-    reasons.push(checkIn.reasonOther);
+    checkIn.reasons.push(checkIn.reasonOther);
   }
   checkIn.createdAt = new Date();
 

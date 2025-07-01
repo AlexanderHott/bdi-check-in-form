@@ -21,6 +21,43 @@ function serializeCheckIn(checkIn: CheckIn) {
   ];
 }
 
+function deserializeCheckIn(data: unknown[]): CheckIn | null {
+  const [
+    cardId,
+    email,
+    name,
+    graduateStatus,
+    graduatingYear,
+    graduateResearchStatus,
+    majors,
+    ethnicities,
+    gender,
+    reasons,
+    createdAt,
+  ] = data;
+  const checkInRaw = {
+    person: {
+      cardId,
+      email,
+      name,
+      graduateStatus,
+      graduatingYear,
+      graduateResearchStatus,
+      majors: String(majors).split(";"),
+      ethnicities: String(ethnicities).split(";"),
+      gender,
+    },
+    reasons: String(reasons).split(";"),
+    createdAt: customDateSchema.safeParse(createdAt).data,
+  };
+  return checkInSchema.safeParse(checkInRaw).data ?? null;
+  // const parsed = checkInSchema.safeParse(checkInRaw);
+  // if (parsed.error) {
+  //   console.error("error parsing checkin", parsed.error);
+  // }
+  // return parsed.data ?? null;
+}
+
 const DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
 
 const customDateSchema = z
@@ -47,7 +84,6 @@ function serializePerson(person: Person): unknown[] {
     person.majors.join(";"),
     person.ethnicities.join(";"),
     person.gender,
-    formatDateET(person.createdAt),
   ];
 }
 
@@ -87,20 +123,17 @@ const tables = {
   },
   "al-checkins-new": {
     serialize: (row: CheckIn) => serializeCheckIn(row),
-    deserialize: (data: unknown[]) =>
-      checkInSchema.safeParse(data).data ?? null,
+    deserialize: deserializeCheckIn,
     getKey: (row: CheckIn) => row.person.cardId,
   },
   "ml-checkins-new": {
     serialize: (row: CheckIn) => serializeCheckIn(row),
-    deserialize: (data: unknown[]) =>
-      checkInSchema.safeParse(data).data ?? null,
+    deserialize: deserializeCheckIn,
     getKey: (row: CheckIn) => row.person.cardId,
   },
   "dsl-checkins-new": {
     serialize: (row: CheckIn) => serializeCheckIn(row),
-    deserialize: (data: unknown[]) =>
-      checkInSchema.safeParse(data).data ?? null,
+    deserialize: deserializeCheckIn,
     getKey: (row: CheckIn) => row.person.cardId,
   },
 } as const satisfies ScheetsSchema;

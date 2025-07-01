@@ -166,7 +166,6 @@ export function newPersonFormSchemaToPerson(
     majors,
     ethnicities,
     graduateStatus,
-    createdAt: new Date(),
   };
 }
 
@@ -180,7 +179,6 @@ export const personSchema = z.object({
   majors: z.array(z.enum(MAJORS).or(z.string())), // majors
   ethnicities: z.array(z.enum(ETHNICITIES).or(z.string())), // ethnicities
   gender: z.enum(GENDERS).or(z.string()), // gender
-  createdAt: z.date(),
 });
 export type Person = z.infer<typeof personSchema>;
 
@@ -217,10 +215,10 @@ export const DSL_REASONS = [
   "Club Meeting",
 ] as const;
 
-export const checkInSchema = z
+export const newCheckInFormSchema = z
   .object({
     person: personSchema,
-    reasons: z.array(z.string().min(1)),
+    reasons: z.array(z.string()),
     reasonOther: z.string(),
     createdAt: z.date(),
   })
@@ -232,6 +230,13 @@ export const checkInSchema = z
       path: ["reasons"],
     },
   );
+export type NewCheckIn = z.infer<typeof newCheckInFormSchema>;
+
+export const checkInSchema = z.object({
+  person: personSchema,
+  reasons: z.array(z.string().min(1)),
+  createdAt: z.date(),
+});
 
 export type CheckIn = z.infer<typeof checkInSchema>;
 

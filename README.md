@@ -23,7 +23,7 @@ bun dev
 
 ## Deploying
 
-Easiest is <https://vercel.com>, but you can deploy anywhere with `bun run next build` or on aws with <https://sst.dev>
+Easiest is <https://vercel.com> or <https://www.netlify.com/>, but you can deploy anywhere with `bun run next build` or on aws with <https://sst.dev>
 
 ## Resources
 
@@ -34,21 +34,15 @@ Easiest is <https://vercel.com>, but you can deploy anywhere with `bun run next 
 ## TODO
 
 - [ ] make email an alternative
-
 - [ ] "thanks for checking in"
-
   - [ ] remember to pick up your training ID
   - [ ] check in another user
-
 - [ ] check out / swipe out
-
   - [ ] email about missing / bad experience
   - [ ] 4 smiley faces
 
 - [ ] arrow / gif for where to swipe card
-
 - ui is 1024x600
-
 - [x] make scroll buttons bigger
 - [x] make "other" fields required
 - [x] make required fields be nonempty strings

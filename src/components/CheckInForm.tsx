@@ -1,6 +1,6 @@
 "use client";
 
-import type { CheckIn, Lab, Person } from "~/schemas";
+import type { Lab, NewCheckIn, Person } from "~/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "~/components/ui/button";
 import { Card, CardHeader } from "~/components/ui/card";
@@ -14,9 +14,9 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { postCheckIn } from "~/lib/server-actions/actions";
+import { MUTATIONS } from "~/lib/server-actions";
 import { cn } from "~/lib/utils";
-import { checkInSchema, CONFIG } from "~/schemas";
+import { CONFIG, newCheckInFormSchema } from "~/schemas";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
@@ -37,8 +37,8 @@ export function CheckInForm({
   const router = useRouter();
   const reasons = config.reasons;
   const sheetName = config.sheetName;
-  const form = useForm<CheckIn>({
-    resolver: zodResolver(checkInSchema),
+  const form = useForm<NewCheckIn>({
+    resolver: zodResolver(newCheckInFormSchema),
     defaultValues: {
       person: person,
       reasons: [],
@@ -47,9 +47,9 @@ export function CheckInForm({
     },
   });
 
-  async function onSubmit(values: CheckIn) {
+  async function onSubmit(values: NewCheckIn) {
     console.log("on submit", { redirectUrl, sheetName, values });
-    await postCheckIn(values, sheetName);
+    await MUTATIONS.postCheckIn(values, sheetName);
     router.push(redirectUrl);
   }
 
@@ -120,7 +120,7 @@ export function CheckInForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Other</FormLabel>
-                <Input {...field} />
+                <Input autoFocus {...field} />
                 <FormMessage />
               </FormItem>
             )}

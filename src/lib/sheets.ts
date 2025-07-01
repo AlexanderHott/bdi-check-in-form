@@ -80,6 +80,7 @@ class SheetTable<Row, Key> {
     });
 
     const values = res.data.values ?? [];
+    console.log("values", values);
     const rows = values
       .slice(1) // skip header row
       .map(this.converter.deserialize)
