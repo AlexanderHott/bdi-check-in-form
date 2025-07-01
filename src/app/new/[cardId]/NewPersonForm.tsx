@@ -29,11 +29,11 @@ import { cn } from "~/lib/utils";
 import {
   ETHNICITIES,
   GENDERS,
+  getYears,
   GRADUATE_STATUS,
   MAJORS,
   newPersonFormSchema,
   newPersonFormSchemaToPerson,
-  YEARS,
 } from "~/schemas";
 import { ArrowDown, ArrowUp, ChevronDown } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -217,7 +217,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {YEARS.map((year) => (
+                      {getYears().map((year) => (
                         <SelectItem key={year} value={year}>
                           {year}
                         </SelectItem>

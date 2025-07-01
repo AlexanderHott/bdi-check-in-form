@@ -16,10 +16,9 @@ import {
 import { Input } from "~/components/ui/input";
 import { postCheckIn } from "~/lib/server-actions/actions";
 import { cn } from "~/lib/utils";
-import { checkInSchema, checkInSchemas, CONFIG } from "~/schemas";
+import { checkInSchema, CONFIG } from "~/schemas";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { type z } from "zod";
 
 import { Loading } from "./Loading";
 import { TimeOut } from "./TimeOut";
@@ -77,7 +76,6 @@ export function CheckInForm({
                           <FormLabel className="font-normal">
                             <Card
                               className={cn(
-                                // @ts-expect-error not specific enough generics
                                 field.value.includes(reason) &&
                                   "border-blue-500 bg-blue-100",
                               )}
@@ -85,7 +83,6 @@ export function CheckInForm({
                               <CardHeader className="flex flex-row items-center gap-2">
                                 <FormControl>
                                   <Checkbox
-                                    // @ts-expect-error not specific enough generics
                                     checked={field.value.includes(reason)}
                                     onCheckedChange={(checked: boolean) => {
                                       if (checked) {

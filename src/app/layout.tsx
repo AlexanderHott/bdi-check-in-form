@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={GeistSans.variable}>
       <head>
-        { }
+        {}
         {/* <script */}
         {/*   // async */}
         {/*   crossOrigin="anonymous" */}

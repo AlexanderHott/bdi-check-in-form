@@ -1,15 +1,13 @@
 import { CheckInForm } from "~/components/CheckInForm";
 import { getPerson } from "~/lib/server-actions/actions";
-import { AL_REASONS } from "~/schemas";
 import { redirect } from "next/navigation";
 
-export default async function MLCheckInPage({
+export default async function ALCheckInPage({
   params,
-}: {
-  params: { cardId: string };
-}) {
-  // eslint-disable-next-line @typescript-eslint/await-thenable
-  const { cardId } = await params; // nextjs 15 dynamicIO
+}: Readonly<{
+  params: Promise<{ cardId: string }>;
+}>) {
+  const { cardId } = await params;
   if (cardId.length !== 15) {
     redirect("/al");
   }
@@ -18,16 +16,5 @@ export default async function MLCheckInPage({
     const redirectUrl = encodeURI(`/al/check-in/${cardId}`);
     redirect(`/new/${cardId}?redirect=${redirectUrl}`);
   }
-  return (
-    <>
-      <CheckInForm
-        person={person}
-        // TODO: move back to al-checkins
-        sheetName="al-checkins-new"
-        redirectUrl="/al"
-        reasons={AL_REASONS}
-        schemaName="alCheckInSchema"
-      />
-    </>
-  );
+  return <CheckInForm person={person} redirectUrl="/al" lab="al" />;
 }
