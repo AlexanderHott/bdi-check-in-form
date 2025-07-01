@@ -1,5 +1,5 @@
 import { CheckInForm } from "~/components/CheckInForm";
-import { getPerson } from "~/lib/actions";
+import { getPerson } from "~/lib/server-actions/actions";
 import { ML_REASONS } from "~/schemas";
 import { redirect } from "next/navigation";
 

@@ -1,5 +1,5 @@
 /**
- * This file contains the validation schemas for the app.
+ * This file contains the validation schemas and general config for the app.
  *
  * Since data comes from both a form and from google sheets, we have to double model the data
  * - one for the in-progress form where users can type out extra answers in the "other fields"
@@ -97,7 +97,7 @@ export const newPersonFormSchema = z
         // read as: "this fails if ..."
         (
           data.graduateStatus.includes("Student") &&
-          data.graduatingYear === undefined
+          data.graduatingYear === ""
         )
       ),
     {
@@ -128,7 +128,7 @@ export const newPersonFormSchema = z
     },
   )
   .refine(
-    (data) => !(data.gender === "Other" && data.genderOther?.length === 0),
+    (data) => !(data.gender === "Other" && data.genderOther.length === 0),
     {
       message: "You must select a gender option",
       path: ["genderOther"],
@@ -206,8 +206,6 @@ export const personSchema = z
       _gender,
       _createdAt,
     ]) => {
-      // console.log("refine");
-      // console.log(graduateStatus);
       return !(
         graduateStatus.includes("Student") && graduatingYear === undefined
       );
@@ -280,48 +278,37 @@ export const DSL_REASONS = [
   "Club Meeting",
 ] as const;
 
-/**
- * Creates a check-in schema.
- *
- * @param reasons a `const readonly` array of strings with at least 1 element.
- */
-export function makeCheckInSchema<
-  const T extends readonly [string, ...string[]],
->(reasons: T) {
-  return z
-    .object({
+export const checkInSchema = z.object({
       person: personSchema,
-      reasons: z.array(z.enum(reasons)),
+      reasons: z.array(z.string().min(1)),
       reasonOther: z.string(),
       createdAt: customDateSchema,
     })
     .refine(
-      (data) => {
-        const b = !(
-          data.reasons.length === 0 && data.reasonOther?.trim().length === 0
-        );
-        console.log({ b });
-        return b;
-      },
+      (data) =>
+        !(data.reasons.length === 0 && data.reasonOther.trim().length === 0),
       {
         message: "You must have at least 1 reason or fill out the Other field",
         path: ["reasons"],
       },
     );
-}
 
-export const mlCheckInSchema = makeCheckInSchema(ML_REASONS);
-export const alCheckInSchema = makeCheckInSchema(AL_REASONS);
-export const dslCheckInSchema = makeCheckInSchema(DSL_REASONS);
+export type CheckIn = z.infer<typeof checkInSchema>;
 
-export type MlCheckIn = z.infer<typeof mlCheckInSchema>;
-export type AlCheckIn = z.infer<typeof alCheckInSchema>;
-export type DslCheckIn = z.infer<typeof dslCheckInSchema>;
 
-export const checkInSchemas = {
-  mlCheckInSchema,
-  alCheckInSchema,
-  dslCheckInSchema,
-} as const;
+export const CONFIG = {
+  al: {
+    reasons: AL_REASONS,
+    sheetName: "al-checkins-new",
+  },
+  ml: {
+    reasons: ML_REASONS,
+    sheetName: "ml-checkins-new",
+  },
+  dsl: {
+    reasons: DSL_REASONS,
+    sheetName: "dsl-checkins-new",
+  },
+} as const satisfies Record<string, { reasons: readonly string[], sheetName: string }>;
 
-export type CheckIn = MlCheckIn | AlCheckIn | DslCheckIn;
+export type Lab = keyof typeof CONFIG;

@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { QUERIES } from "~/lib/server-actions";
 import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -37,8 +38,10 @@ type FormSchema = z.infer<typeof formSchema>;
 
 export function CardIdForm({
   redirect, // must end with a "/"
+  checkinTable,
 }: {
   redirect: string;
+  checkinTable: "al-checkins-new" | "ml-checkins-new" | "dsl-checkins-new";
 }) {
   if (!redirect.endsWith("/")) {
     throw new Error("redirect must end with a /");
@@ -54,11 +57,20 @@ export function CardIdForm({
   });
 
   const onSubmit = useCallback(
-    (values: FormSchema) => {
-      console.log(values);
-      router.push(redirect + values.cardId.toString());
+    async (values: FormSchema) => {
+      console.log("cardid submit form", values);
+      const checkin = await QUERIES.getRecentCheckin(
+        checkinTable,
+        values.cardId,
+      );
+
+      if (checkin === null) {
+        router.push(redirect + values.cardId.toString());
+      } else {
+        router.push("/checkout");
+      }
     },
-    [router, redirect],
+    [router, redirect, checkinTable],
   );
 
   useEffect(() => {
@@ -73,11 +85,15 @@ export function CardIdForm({
                 void form.handleSubmit(onSubmit)();
               }
             })
-            .catch((e) => console.error("Error submitting form " + e));
+            .catch((e: unknown) => {
+              console.error(`Error submitting form ${String(e)}`);
+            });
         }
       }
     });
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [form, form.watch, onSubmit]);
 
   return (
@@ -101,8 +117,10 @@ export function CardIdForm({
                     }
                     placeholder="603305000000000"
                     onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                      if (e.currentTarget.value.length <= 15)
-                        return onChange(e);
+                      if (e.currentTarget.value.length <= 15) {
+                        onChange(e);
+                        return;
+                      }
                     }}
                     onBlur={() => {
                       onBlur();
@@ -139,7 +157,9 @@ export function CardIdForm({
             type="button"
             className="w-full"
             variant={"secondary"}
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              window.location.reload();
+            }}
           >
             Clear
           </Button>

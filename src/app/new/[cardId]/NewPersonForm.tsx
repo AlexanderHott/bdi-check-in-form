@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { postNewPerson } from "~/lib/actions";
+import { postNewPerson } from "~/lib/server-actions/actions";
 import { cn } from "~/lib/utils";
 import {
   ETHNICITIES,
@@ -209,7 +209,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                   <FormLabel>Graduating Year</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value?.toString()}
+                    defaultValue={field.value.toString()}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -241,7 +241,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                   <FormLabel>Graduate Research Status</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value?.toString()}
+                    defaultValue={field.value.toString()}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -287,20 +287,22 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                         >
                           <FormControl>
                             <Checkbox
-                              checked={field.value?.includes(major)}
+                              checked={field.value.includes(major)}
                               onCheckedChange={(checked: boolean) => {
                                 if (major === "Other" && checked) {
                                   setMajorShowOther(true);
                                 } else if (major === "Other" && !checked) {
                                   setMajorShowOther(false);
                                 }
-                                return checked
-                                  ? field.onChange([...field.value, major])
-                                  : field.onChange(
-                                      field.value?.filter(
-                                        (value: string) => value !== major,
-                                      ),
-                                    );
+                                if (checked) {
+                                  field.onChange([...field.value, major]);
+                                } else {
+                                  field.onChange(
+                                    field.value.filter(
+                                      (value: string) => value !== major,
+                                    ),
+                                  );
+                                }
                               }}
                             />
                           </FormControl>
@@ -366,20 +368,22 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                         >
                           <FormControl>
                             <Checkbox
-                              checked={field.value?.includes(ethnicity)}
+                              checked={field.value.includes(ethnicity)}
                               onCheckedChange={(checked: boolean) => {
                                 if (ethnicity === "Other" && checked) {
                                   setEthnicityShowOther(true);
                                 } else if (ethnicity === "Other" && !checked) {
                                   setEthnicityShowOther(false);
                                 }
-                                return checked
-                                  ? field.onChange([...field.value, ethnicity])
-                                  : field.onChange(
-                                      field.value?.filter(
-                                        (value: string) => value !== ethnicity,
-                                      ),
-                                    );
+                                if (checked) {
+                                  field.onChange([...field.value, ethnicity]);
+                                } else {
+                                  field.onChange(
+                                    field.value.filter(
+                                      (value: string) => value !== ethnicity,
+                                    ),
+                                  );
+                                }
                               }}
                             />
                           </FormControl>
@@ -433,7 +437,6 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                     className="flex flex-col space-y-1"
                     onValueChange={(value: string) => {
                       setGenderShowOther(value === "Other");
-                      console.log(value === "Other");
                       field.onChange(value);
                     }}
                     defaultValue={field.value}
@@ -470,6 +473,9 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
               )}
             />
           )}
+          {/* 
+            Submit and back button 
+          */}
           <div className="flex gap-4">
             <Button
               type="submit"
@@ -479,7 +485,9 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
               {form.formState.isSubmitting ? <Loading /> : "Submit"}
             </Button>
             <Button
-              onClick={() => router.back()}
+              onClick={() => {
+                router.back();
+              }}
               variant={"secondary"}
               type="button"
               className="w-full"
@@ -510,7 +518,9 @@ function WhyDoWeAsk() {
     <div className="w-full">
       <button
         type="button"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => {
+          setIsExpanded(!isExpanded);
+        }}
         className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
         aria-expanded={isExpanded}
       >

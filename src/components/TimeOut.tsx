@@ -32,6 +32,10 @@ export function TimeOut({
   }, [href, router, timeout]);
 
   useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      return;
+    }
+
     timerRef.current = setTimeout(() => {
       router.replace(href);
     }, timeout * 1000);

@@ -58,7 +58,6 @@ class SheetTable<Row, Key> {
   ) {}
 
   async get(key: Key): Promise<Row | null> {
-    console.log("get", key);
     const res = await this.sheetsApi.spreadsheets.values.get({
       spreadsheetId: env.SHEET_ID,
       auth: this.auth,
@@ -66,16 +65,26 @@ class SheetTable<Row, Key> {
     });
 
     const values = res.data.values ?? [];
-    console.log(values[1]);
     const rows = values
       .slice(1) // skip header row
       .map(this.converter.deserialize)
-      .filter((row) => row !== null)
-      .map((row) => {
-        console.log(row);
-        return row;
-      });
-    console.log(rows.length);
+      .filter((row) => row !== null);
+    return rows.find((row) => this.converter.getKey(row) === key) ?? null;
+  }
+
+  async getLast(key: Key): Promise<Row | null> {
+    const res = await this.sheetsApi.spreadsheets.values.get({
+      spreadsheetId: env.SHEET_ID,
+      auth: this.auth,
+      range: this.tableName,
+    });
+
+    const values = res.data.values ?? [];
+    const rows = values
+      .slice(1) // skip header row
+      .map(this.converter.deserialize)
+      .filter((row) => row !== null);
+    rows.reverse();
     return rows.find((row) => this.converter.getKey(row) === key) ?? null;
   }
 

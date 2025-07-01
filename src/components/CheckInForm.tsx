@@ -1,6 +1,6 @@
 "use client";
 
-import type { CheckIn, Person } from "~/schemas";
+import type { CheckIn, Lab, Person } from "~/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "~/components/ui/button";
 import { Card, CardHeader } from "~/components/ui/card";
@@ -14,9 +14,9 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { postCheckIn } from "~/lib/actions";
+import { postCheckIn } from "~/lib/server-actions/actions";
 import { cn } from "~/lib/utils";
-import { checkInSchemas } from "~/schemas";
+import { checkInSchema, checkInSchemas, CONFIG } from "~/schemas";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { type z } from "zod";
@@ -26,25 +26,25 @@ import { TimeOut } from "./TimeOut";
 
 export function CheckInForm({
   person,
-  schemaName,
-  reasons,
+  lab,
   redirectUrl,
-  sheetName,
 }: {
   person: Person;
-  schemaName: keyof typeof checkInSchemas;
-  reasons: Readonly<CheckIn["reasons"]>;
+  lab: Lab;
   redirectUrl: string;
-  sheetName: "al-checkins-new" | "ml-checkins-new" | "dsl-checkins-new";
 }) {
+  const config = CONFIG[lab];
+
   const router = useRouter();
-  const schema = checkInSchemas[schemaName];
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
+  const reasons = config.reasons;
+  const sheetName = config.sheetName;
+  const form = useForm<CheckIn>({
+    resolver: zodResolver(checkInSchema),
     defaultValues: {
       person: person,
       reasons: [],
       reasonOther: "",
+      createdAt: new Date(),
     },
   });
 
@@ -78,7 +78,7 @@ export function CheckInForm({
                             <Card
                               className={cn(
                                 // @ts-expect-error not specific enough generics
-                                field.value?.includes(reason) &&
+                                field.value.includes(reason) &&
                                   "border-blue-500 bg-blue-100",
                               )}
                             >
@@ -86,18 +86,20 @@ export function CheckInForm({
                                 <FormControl>
                                   <Checkbox
                                     // @ts-expect-error not specific enough generics
-                                    checked={field.value?.includes(reason)}
+                                    checked={field.value.includes(reason)}
                                     onCheckedChange={(checked: boolean) => {
-                                      return checked
-                                        ? field.onChange([
-                                            ...field.value,
-                                            reason,
-                                          ])
-                                        : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== reason,
-                                            ),
-                                          );
+                                      if (checked) {
+                                        field.onChange([
+                                          ...field.value,
+                                          reason,
+                                        ]);
+                                      } else {
+                                        field.onChange(
+                                          field.value.filter(
+                                            (value) => value !== reason,
+                                          ),
+                                        );
+                                      }
                                     }}
                                   />
                                 </FormControl>
@@ -135,7 +137,9 @@ export function CheckInForm({
               {form.formState.isSubmitting ? <Loading /> : "Submit"}
             </Button>
             <Button
-              onClick={() => router.back()}
+              onClick={() => {
+                router.back();
+              }}
               variant={"secondary"}
               type="button"
               className="w-full"
