@@ -1,5 +1,6 @@
 "use client";
 
+import type { Lab } from "~/schemas";
 import { useCallback, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "~/components/ui/button";
@@ -14,6 +15,7 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { QUERIES } from "~/lib/server-actions";
+import { CONFIG } from "~/schemas";
 import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -40,14 +42,16 @@ type EndsWithSlash = `${string}/`;
 
 export function CardIdForm({
   redirect, // must end with a "/"
-  checkinTable,
+  lab,
 }: {
   redirect: EndsWithSlash;
-  checkinTable: "al-checkins-new" | "ml-checkins-new" | "dsl-checkins-new";
+  lab: Lab;
 }) {
   if (!redirect.endsWith("/")) {
     throw new Error("redirect prop must end with a /");
   }
+  const config = CONFIG[lab];
+  const sheetName = config.sheetName;
 
   const router = useRouter();
   const form = useForm<FormSchema>({
@@ -61,19 +65,18 @@ export function CardIdForm({
   const onSubmit = useCallback(
     async (values: FormSchema) => {
       console.log("cardid submit form", values);
-      const checkin = await QUERIES.getRecentCheckin(
-        checkinTable,
-        values.cardId,
-      );
+      const checkin = await QUERIES.getRecentCheckin(sheetName, values.cardId);
       console.log("checkin", checkin);
 
-      if (checkin === null) {
-        router.push(redirect + values.cardId.toString());
+      const checkinExists = checkin !== null;
+      const checkinCompleted = !checkin?.endTime;
+      if (checkinExists && !checkinCompleted) {
+        router.push(redirect + "/check-in/" + values.cardId.toString());
       } else {
-        router.push("/checkout");
+        router.push(redirect + "/check-out/" + values.cardId.toString());
       }
     },
-    [router, redirect, checkinTable],
+    [router, redirect, sheetName],
   );
 
   useEffect(() => {

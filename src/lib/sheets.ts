@@ -3,6 +3,8 @@ import type { sheets_v4 } from "googleapis";
 import { env } from "~/env";
 import { google } from "googleapis";
 
+import { buildSheetId } from "./sheet-id";
+
 export type SheetSchema<Row, Key> = {
   serialize: (row: Row) => unknown[];
   deserialize: (data: unknown[]) => Row | null;
@@ -80,7 +82,6 @@ class SheetTable<Row, Key> {
     });
 
     const values = res.data.values ?? [];
-    console.log("values", values);
     const rows = values
       .slice(1) // skip header row
       .map(this.converter.deserialize)
@@ -97,6 +98,38 @@ class SheetTable<Row, Key> {
       valueInputOption: "USER_ENTERED", // WARNING: no sanitization
       requestBody: {
         values: [this.converter.serialize(row)],
+      },
+    });
+  }
+  async updateLast(key: Key, row: Row): Promise<void> {
+    const res = await this.sheetsApi.spreadsheets.values.get({
+      spreadsheetId: env.SHEET_ID,
+      auth: this.auth,
+      range: this.tableName,
+    });
+
+    const values = res.data.values ?? [];
+    const rows = values
+      .slice(1) // skip header row
+      .map(this.converter.deserialize)
+      .filter((row) => row !== null);
+    rows.reverse();
+    const idxReversed = rows.findIndex(
+      (row) => this.converter.getKey(row) === key,
+    );
+    if (idxReversed === -1) return;
+    const idx = rows.length - idxReversed - 1;
+
+    const serialized = this.converter.serialize(row);
+    const sheetId = buildSheetId(this.tableName, idx + 1, serialized.length); // +1 because we skip the header row
+
+    await this.sheetsApi.spreadsheets.values.update({
+      auth: this.auth,
+      range: sheetId,
+      spreadsheetId: env.SHEET_ID,
+      valueInputOption:"USER_ENTERED",
+      requestBody: {
+        values: [serialized],
       },
     });
   }

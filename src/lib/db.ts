@@ -17,7 +17,9 @@ function serializeCheckIn(checkIn: CheckIn) {
     checkIn.person.ethnicities.join(";"),
     checkIn.person.gender,
     checkIn.reasons.join(";"),
-    formatDateET(checkIn.createdAt),
+    formatDateET(checkIn.startTime),
+    checkIn.endTime ? formatDateET(checkIn.endTime) : undefined,
+    checkIn.rating,
   ];
 }
 
@@ -33,7 +35,9 @@ function deserializeCheckIn(data: unknown[]): CheckIn | null {
     ethnicities,
     gender,
     reasons,
-    createdAt,
+    startTime,
+    endTime,
+    rating,
   ] = data;
   const checkInRaw = {
     person: {
@@ -48,14 +52,17 @@ function deserializeCheckIn(data: unknown[]): CheckIn | null {
       gender,
     },
     reasons: String(reasons).split(";"),
-    createdAt: customDateSchema.safeParse(createdAt).data,
+    startTime: customDateSchema.safeParse(startTime).data,
+    endTime: customDateSchema.safeParse(endTime).data,
+    rating,
   };
-  return checkInSchema.safeParse(checkInRaw).data ?? null;
-  // const parsed = checkInSchema.safeParse(checkInRaw);
-  // if (parsed.error) {
-  //   console.error("error parsing checkin", parsed.error);
-  // }
-  // return parsed.data ?? null;
+  // return checkInSchema.safeParse(checkInRaw).data ?? null;
+  const parsed = checkInSchema.safeParse(checkInRaw);
+  if (parsed.error) {
+    console.log(checkInRaw)
+    console.error("error parsing checkin", parsed.error.message);
+  }
+  return parsed.data ?? null;
 }
 
 const DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
@@ -98,7 +105,7 @@ function deserializePerson(data: unknown[]): Person | null {
     majors,
     ethnicities,
     gender,
-    createdAt,
+    startTime,
   ] = data;
   const personRaw = {
     cardId,
@@ -110,7 +117,7 @@ function deserializePerson(data: unknown[]): Person | null {
     majors: String(majors).split(";"),
     ethnicities: String(ethnicities).split(";"),
     gender,
-    createdAt: customDateSchema.safeParse(createdAt).data,
+    startTime: customDateSchema.safeParse(startTime).data,
   };
   return personSchema.safeParse(personRaw).data ?? null;
 }

@@ -6,7 +6,7 @@ export default function DSLabPage() {
       <h1 className="mb-8 text-4xl font-bold">
         Digital Scholarship Lab Check-in
       </h1>
-      <CardIdForm redirect="/dsl/check-in/" checkinTable="dsl-checkins-new" />
+      <CardIdForm redirect="/dsl/" lab="dsl" />
     </>
   );
 }

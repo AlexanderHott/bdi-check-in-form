@@ -220,7 +220,7 @@ export const newCheckInFormSchema = z
     person: personSchema,
     reasons: z.array(z.string()),
     reasonOther: z.string(),
-    createdAt: z.date(),
+    startTime: z.date(),
   })
   .refine(
     (data) =>
@@ -235,7 +235,9 @@ export type NewCheckIn = z.infer<typeof newCheckInFormSchema>;
 export const checkInSchema = z.object({
   person: personSchema,
   reasons: z.array(z.string().min(1)),
-  createdAt: z.date(),
+  startTime: z.date(),
+  endTime: z.date().optional(),
+  rating: z.string().optional()
 });
 
 export type CheckIn = z.infer<typeof checkInSchema>;

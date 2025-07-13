@@ -46,3 +46,20 @@ Easiest is <https://vercel.com> or <https://www.netlify.com/>, but you can deplo
 - [x] make scroll buttons bigger
 - [x] make "other" fields required
 - [x] make required fields be nonempty strings
+
+- [ ] replace redirects with 404 page + back
+- [ ] move cardid to url fragment
+
+---
+
+on check out
+
+check if there was a checkin thats valid
+if so, redirect to
+
+redirect + "/checkout"
+
+- rating 1-4
+- comment box
+
+- gamify checking out specifically

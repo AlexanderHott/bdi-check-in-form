@@ -2,11 +2,10 @@ import { NewPersonForm } from "./NewPersonForm";
 
 export default async function NewPersonPage({
   params,
-}: {
-  params: { cardId: string };
-}) {
-  // eslint-disable-next-line @typescript-eslint/await-thenable
-  const { cardId } = await params; // nextjs 15 dynamicIO
+}: Readonly<{
+  params: Promise<{ cardId: string }>;
+}>) {
+  const { cardId } = await params;
   return (
     <div className="flex flex-col gap-4">
       <h1 className="mb-8 text-4xl font-bold">BDI Check-in Form</h1>

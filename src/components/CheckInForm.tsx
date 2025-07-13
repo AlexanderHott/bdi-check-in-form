@@ -43,7 +43,7 @@ export function CheckInForm({
       person: person,
       reasons: [],
       reasonOther: "",
-      createdAt: new Date(),
+      startTime: new Date(),
     },
   });
 

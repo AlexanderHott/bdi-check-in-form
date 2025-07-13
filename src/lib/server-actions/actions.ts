@@ -4,23 +4,13 @@ import "server-only";
 
 import type { CheckIn, NewCheckIn, Person } from "~/schemas";
 
+import { checkInValid } from "../check-in-valid";
 import { getDb } from "../db";
 
 export async function getPerson(cardId: string): Promise<Person | null> {
   "use server";
   const db = getDb();
   return await db.table("people-new").get(cardId);
-}
-
-function isTooOld(input: Date): boolean {
-  if (!(input instanceof Date) || isNaN(input.getTime())) {
-    throw new Error("Invalid date input");
-  }
-
-  const expiry = new Date(input);
-  expiry.setHours(4, 0, 0, 0);
-
-  return input < expiry;
 }
 
 export async function getRecentCheckin(
@@ -34,7 +24,7 @@ export async function getRecentCheckin(
   if (checkin === null) {
     return null;
   }
-  if (isTooOld(checkin.createdAt)) {
+  if (!checkInValid(checkin.startTime, new Date())) {
     return null;
   }
   return checkin;
@@ -50,9 +40,18 @@ export async function postCheckIn(
   if (checkIn.reasonOther) {
     checkIn.reasons.push(checkIn.reasonOther);
   }
-  checkIn.createdAt = new Date();
+  checkIn.startTime = new Date();
 
   await db.table(table).add(checkIn);
+}
+
+export async function postCheckOut(
+  checkIn: CheckIn,
+  table: "al-checkins-new" | "ml-checkins-new" | "dsl-checkins-new",
+) {
+  "use server";
+  const db = getDb();
+  await db.table(table).updateLast(checkIn.person.cardId, checkIn);
 }
 
 export async function postNewPerson(person: Person) {
