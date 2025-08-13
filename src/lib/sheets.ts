@@ -2,6 +2,7 @@ import type { JWT } from "google-auth-library";
 import type { sheets_v4 } from "googleapis";
 import { env } from "~/env";
 import { google } from "googleapis";
+import { connection } from "next/server";
 
 import { buildSheetId } from "./sheet-id";
 
@@ -60,6 +61,7 @@ class SheetTable<Row, Key> {
   ) {}
 
   async get(key: Key): Promise<Row | null> {
+    await connection();
     const res = await this.sheetsApi.spreadsheets.values.get({
       spreadsheetId: env.SHEET_ID,
       auth: this.auth,
@@ -75,6 +77,7 @@ class SheetTable<Row, Key> {
   }
 
   async getLast(key: Key): Promise<Row | null> {
+    await connection();
     const res = await this.sheetsApi.spreadsheets.values.get({
       spreadsheetId: env.SHEET_ID,
       auth: this.auth,
@@ -91,6 +94,7 @@ class SheetTable<Row, Key> {
   }
 
   async add(row: Row): Promise<void> {
+    await connection();
     await this.sheetsApi.spreadsheets.values.append({
       spreadsheetId: env.SHEET_ID,
       auth: this.auth,
@@ -102,6 +106,7 @@ class SheetTable<Row, Key> {
     });
   }
   async updateLast(key: Key, row: Row): Promise<void> {
+    await connection();
     const res = await this.sheetsApi.spreadsheets.values.get({
       spreadsheetId: env.SHEET_ID,
       auth: this.auth,
@@ -127,7 +132,7 @@ class SheetTable<Row, Key> {
       auth: this.auth,
       range: sheetId,
       spreadsheetId: env.SHEET_ID,
-      valueInputOption:"USER_ENTERED",
+      valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [serialized],
       },

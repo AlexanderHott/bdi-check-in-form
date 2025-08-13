@@ -69,8 +69,8 @@ export function CardIdForm({
       console.log("checkin", checkin);
 
       const checkinExists = checkin !== null;
-      const checkinCompleted = !checkin?.endTime;
-      if (checkinExists && !checkinCompleted) {
+      const checkinCompleted = Boolean(checkin?.endTime);
+      if (!checkinExists || checkinCompleted) {
         router.push(redirect + "/check-in/" + values.cardId.toString());
       } else {
         router.push(redirect + "/check-out/" + values.cardId.toString());

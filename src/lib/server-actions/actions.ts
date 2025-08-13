@@ -3,6 +3,8 @@
 import "server-only";
 
 import type { CheckIn, NewCheckIn, Person } from "~/schemas";
+import { env } from "~/env";
+import * as nodemailer from "nodemailer";
 
 import { checkInValid } from "../check-in-valid";
 import { getDb } from "../db";
@@ -60,4 +62,23 @@ export async function postNewPerson(person: Person) {
   const db = getDb();
 
   await db.table("people-new").add(person);
+}
+
+export async function sendEmail() {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: env.GOOGLE_EMAIL,
+      pass: env.GOOGLE_APP_PASSWORD,
+    },
+  });
+
+  const mailOptions = {
+    from: env.GOOGLE_EMAIL,
+    to: env.EMAIL_ALERT_TO,
+    subject: "Hello from Node.js",
+    text: "This is a test email sent using Gmail + app password in Node.js!",
+  };
+
+  await transporter.sendMail(mailOptions);
 }

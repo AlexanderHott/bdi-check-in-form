@@ -11,6 +11,9 @@ export const env = createEnv({
     SHEET_ID: z.string(),
     CLIENT_EMAIL: z.string().email(),
     PRIVATE_KEY: z.string(),
+    GOOGLE_APP_PASSWORD: z.string(),
+    GOOGLE_EMAIL: z.string().email(),
+    EMAIL_ALERT_TO: z.string(),
   },
 
   /**
@@ -31,6 +34,9 @@ export const env = createEnv({
     SHEET_ID: process.env.SHEET_ID,
     CLIENT_EMAIL: process.env.CLIENT_EMAIL,
     PRIVATE_KEY: process.env.PRIVATE_KEY,
+    GOOGLE_APP_PASSWORD: process.env.GOOGLE_APP_PASSWORD,
+    GOOGLE_EMAIL: process.env.GOOGLE_EMAIL,
+    EMAIL_ALERT_TO: process.env.EMAIL_ALERT_TO,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
