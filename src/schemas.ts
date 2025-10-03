@@ -237,7 +237,8 @@ export const checkInSchema = z.object({
   reasons: z.array(z.string().min(1)),
   startTime: z.date(),
   endTime: z.date().optional(),
-  rating: z.string().optional()
+  rating: z.string().optional(),
+  comment: z.string().optional(),
 });
 
 export type CheckIn = z.infer<typeof checkInSchema>;

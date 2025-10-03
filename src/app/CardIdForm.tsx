@@ -1,7 +1,7 @@
 "use client";
 
 import type { Lab } from "~/schemas";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "~/components/ui/button";
 import {
@@ -16,7 +16,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { QUERIES } from "~/lib/server-actions";
 import { CONFIG } from "~/schemas";
-import { Loader } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -71,35 +71,13 @@ export function CardIdForm({
       const checkinExists = checkin !== null;
       const checkinCompleted = Boolean(checkin?.endTime);
       if (!checkinExists || checkinCompleted) {
-        router.push(redirect + "/check-in/" + values.cardId.toString());
+        router.push(redirect + "/check-in/" + values.cardId);
       } else {
-        router.push(redirect + "/check-out/" + values.cardId.toString());
+        router.push(redirect + "/check-out/" + values.cardId);
       }
     },
     [router, redirect, sheetName],
   );
-
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name !== "cardId") return;
-      const { cardId } = value;
-      if (cardId?.length !== 15) return;
-
-      form
-        .trigger()
-        .then((isValid) => {
-          if (isValid) {
-            void form.handleSubmit(onSubmit)();
-          }
-        })
-        .catch((e: unknown) => {
-          console.error(`Error submitting form ${String(e)}`);
-        });
-    });
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [form, form.watch, onSubmit]);
 
   return (
     <Form {...form}>
@@ -116,16 +94,25 @@ export function CardIdForm({
                   <Input
                     autoFocus
                     type="number"
-                    disabled={
-                      form.formState.isSubmitted &&
-                      (form.formState.isValid || form.formState.isValidating)
-                    }
+                    disabled={form.formState.isSubmitting}
                     placeholder="603305000000000"
                     onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                      if (e.currentTarget.value.length <= 15) {
-                        onChange(e);
+                      const CARD_ID_LENGTH = 15;
+                      onChange(e);
+                      if (e.currentTarget.value.length < CARD_ID_LENGTH) {
                         return;
                       }
+
+                      form
+                        .trigger()
+                        .then((isValid) => {
+                          if (isValid) {
+                            void form.handleSubmit(onSubmit)();
+                          }
+                        })
+                        .catch((e: unknown) => {
+                          console.error(`Error submitting form ${String(e)}`);
+                        });
                     }}
                     onBlur={() => {
                       onBlur();
@@ -147,13 +134,10 @@ export function CardIdForm({
           <Button
             type="submit"
             className="w-full"
-            disabled={
-              form.formState.isSubmitted &&
-              (form.formState.isValid || form.formState.isValidating)
-            }
+            disabled={form.formState.isSubmitting}
           >
-            {form.formState.isLoading ? (
-              <Loader className="animate-spin" />
+            {form.formState.isSubmitting ? (
+              <Loader2 className="animate-spin" />
             ) : (
               "Submit"
             )}

@@ -1,11 +1,13 @@
 import type { ScheetsSchema } from "~/lib/sheets";
 import type { CheckIn, Person } from "~/schemas";
+import { formatDateET } from "~/lib/date-format";
 import { Sheets } from "~/lib/sheets";
 import { checkInSchema, personSchema } from "~/schemas";
 import { isValid, parse } from "date-fns";
 import { z } from "zod";
 
 function serializeCheckIn(checkIn: CheckIn) {
+  console.log("serializeCheckIn", { checkIn });
   return [
     checkIn.person.cardId,
     checkIn.person.email,
@@ -20,6 +22,7 @@ function serializeCheckIn(checkIn: CheckIn) {
     formatDateET(checkIn.startTime),
     checkIn.endTime ? formatDateET(checkIn.endTime) : undefined,
     checkIn.rating,
+    checkIn.comment,
   ];
 }
 
@@ -38,6 +41,7 @@ function deserializeCheckIn(data: unknown[]): CheckIn | null {
     startTime,
     endTime,
     rating,
+    comment,
   ] = data;
   const checkInRaw = {
     person: {
@@ -55,11 +59,12 @@ function deserializeCheckIn(data: unknown[]): CheckIn | null {
     startTime: customDateSchema.safeParse(startTime).data,
     endTime: customDateSchema.safeParse(endTime).data,
     rating,
+    comment,
   };
   // return checkInSchema.safeParse(checkInRaw).data ?? null;
   const parsed = checkInSchema.safeParse(checkInRaw);
   if (parsed.error) {
-    console.log(checkInRaw)
+    console.log(checkInRaw);
     console.error("error parsing checkin", parsed.error.message);
   }
   return parsed.data ?? null;
@@ -74,9 +79,9 @@ const customDateSchema = z
       const parsed = parse(val, DATE_FORMAT, new Date());
       return isValid(parsed);
     },
-    (val) => ({
-      message: `Invalid date format, expected ${DATE_FORMAT}, got ${val}`,
-    }),
+    // (val) => ({
+    //   message: `Invalid date format, expected ${DATE_FORMAT}, got ${val}`,
+    // }),
   )
   .transform((val) => parse(val, DATE_FORMAT, new Date()));
 
@@ -146,19 +151,3 @@ const tables = {
 } as const satisfies ScheetsSchema;
 
 export const getDb = () => new Sheets(tables);
-
-export function formatDateET(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  })
-    .format(date)
-    .replace(/\//g, "/")
-    .replaceAll(",", "");
-}
