@@ -162,7 +162,7 @@ export function CheckOutForm({
                       </FormControl>
                       <div className="grid gap-1.5 font-normal">
                         <p className="text-sm leading-none font-medium">
-                          Was something broken or missing?
+                          Notify staff: was something broken or missing?
                         </p>
                         <p className="text-muted-foreground text-sm">
                           {
@@ -184,7 +184,9 @@ export function CheckOutForm({
               name="comment"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>What went wrong?</FormLabel>
+                  <FormLabel>
+                    What went wrong? (will be emailed to staff)
+                  </FormLabel>
                   <FormControl>
                     <Textarea placeholder="" {...field} />
                   </FormControl>
