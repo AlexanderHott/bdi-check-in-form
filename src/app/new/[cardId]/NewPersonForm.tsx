@@ -209,7 +209,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                   <FormLabel>Graduating Year</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value.toString()}
+                    defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -241,7 +241,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                   <FormLabel>Graduate Research Status</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value.toString()}
+                    defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>

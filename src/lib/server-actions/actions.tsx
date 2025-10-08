@@ -2,11 +2,14 @@
 
 import "server-only";
 
-import type { CheckIn, NewCheckIn, Person } from "~/schemas";
+import type { CheckIn, Lab, NewCheckIn, Person } from "~/schemas";
+import { render } from "@react-email/components";
+import { SomethingWentWrongEmail } from "~/components/email/something-went-wrong";
 import { env } from "~/env";
 import * as nodemailer from "nodemailer";
 
 import { checkInValid } from "../check-in-valid";
+import { formatDateET } from "../date-format";
 import { getDb } from "../db";
 
 export async function getPerson(cardId: string): Promise<Person | null> {
@@ -64,7 +67,7 @@ export async function postNewPerson(person: Person) {
   await db.table("people-new").add(person);
 }
 
-export async function sendEmail() {
+export async function sendEmail(checkin: CheckIn, lab: Lab) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -73,11 +76,26 @@ export async function sendEmail() {
     },
   });
 
+  const htmlContent = await render(
+    <SomethingWentWrongEmail
+      checkinReasons={checkin.reasons}
+      comment={checkin.comment ?? "<no comment>"}
+      lab={lab.toUpperCase()}
+      checkinTime={formatDateET(checkin.startTime)}
+      checkoutTime={
+        checkin.endTime ? formatDateET(checkin.endTime) : "<no checkout time>"
+      }
+      rating={checkin.rating ?? "<no rating>"}
+      name={checkin.person.name}
+      email={checkin.person.email}
+    />,
+  );
+
   const mailOptions = {
     from: env.GOOGLE_EMAIL,
     to: env.EMAIL_ALERT_TO,
-    subject: "Hello from Node.js",
-    text: "This is a test email sent using Gmail + app password in Node.js!",
+    subject: `🚨 Something went wrong in the ${lab}`,
+    html: htmlContent,
   };
 
   await transporter.sendMail(mailOptions);

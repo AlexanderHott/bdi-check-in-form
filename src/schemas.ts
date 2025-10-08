@@ -7,23 +7,7 @@
  *
  * The tuple respone is transformed into an object as part of the parsing (done via zod.transform).
  */
-import { isValid, parse } from "date-fns";
 import { z } from "zod";
-
-const FORMAT = "MM/dd/yyyy HH:mm:ss";
-
-const customDateSchema = z
-  .string()
-  .refine(
-    (val) => {
-      const parsed = parse(val, FORMAT, new Date());
-      return isValid(parsed);
-    },
-    (val) => ({
-      message: `Invalid date format, expected ${FORMAT}, got ${val}`,
-    }),
-  )
-  .transform((val) => parse(val, FORMAT, new Date()));
 
 export const GRADUATE_STATUS = [
   "Undergraduate Student",
@@ -70,7 +54,7 @@ export function getYears() {
 export const newPersonFormSchema = z
   .object({
     cardId: z.string().length(15),
-    email: z.string().email(),
+    email: z.email(),
     name: z
       .string()
       .min(1, { message: "Name must contain at least 1 character" })
@@ -171,7 +155,7 @@ export function newPersonFormSchemaToPerson(
 
 export const personSchema = z.object({
   cardId: z.string().length(15), // cardId
-  email: z.string().email(), // email
+  email: z.email(), // email
   name: z.string().min(1), // name
   graduateStatus: z.enum(GRADUATE_STATUS).or(z.string()), // graduateStatus
   graduatingYear: z.string().optional(), // graduatingYear

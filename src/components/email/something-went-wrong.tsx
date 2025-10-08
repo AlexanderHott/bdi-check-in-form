@@ -14,17 +14,18 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
-import { AlertTriangle, ExternalLink } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 interface SomethingWentWrongEmailProps {
   comment: string;
   lab: string;
   checkinTime: string;
   checkoutTime: string;
+  rating: string;
   name: string;
   email: string;
-  checkinReason: string[];
-  sheetUrl: string;
+  checkinReasons: string[];
+  //   sheetUrl: string;
 }
 
 function InfoRow(props: { label: string; value: string }) {
@@ -68,13 +69,14 @@ export function SomethingWentWrongEmail(props: SomethingWentWrongEmailProps) {
             {/* Info */}
             <Section className="mt-4 p-4 bg-neutral-100">
               <InfoRow label="Lab" value={props.lab} />
-              <InfoRow label="Name" value={props.name} />
+              <InfoRow label="Person Name" value={props.name} />
               <InfoRow label="Email" value={props.email} />
               <InfoRow label="Checkin Time" value={props.checkinTime} />
               <InfoRow label="Checkout Time" value={props.checkoutTime} />
+              <InfoRow label="Rating" value={`${props.rating} / 4`} />
               <InfoRow
                 label="Checkin Reasons"
-                value={props.checkinReason.join(", ")}
+                value={props.checkinReasons.join(", ")}
               />
             </Section>
 
@@ -91,6 +93,7 @@ export function SomethingWentWrongEmail(props: SomethingWentWrongEmailProps) {
                   borderRadius: "5px",
                   border: "1px solid #eee",
                   color: "#333",
+                  fontSize: "1rem",
                 }}
               >
                 {props.comment}
@@ -98,19 +101,19 @@ export function SomethingWentWrongEmail(props: SomethingWentWrongEmailProps) {
               <Section className="mt-4">
                 <Button
                   // href={`mailto:${props.email}&subject=${props.lab} visit ${props.checkinTime} - ${props.checkoutTime}`}
-                  href={`mailto:${props.email}`}
+                  href={`mailto:${props.email}?subject=${props.lab} visit ${props.checkinTime} followup`}
                   className="rounded bg-[#000000] px-5 py-3 text-center text-[12px] text-white no-underline font-semibold mr-4"
                 >
                   Follow up
                 </Button>
-                <Button
+                {/* <Button
                   href={props.sheetUrl}
                   target="_blank"
                   className="rounded bg-[#f5f5f5] px-5 py-3 text-center text-[12px] text-black no-underline font-semibold"
                 >
                   View entry in the Google Sheet
                   <ExternalLink className="w-3 h-3 ml-2" />
-                </Button>
+                </Button> */}
               </Section>
             </Section>
 
@@ -133,9 +136,10 @@ export function SomethingWentWrongEmail(props: SomethingWentWrongEmailProps) {
                   target="_blank"
                   style={{ ...link, color: "#898989" }}
                 >
-                  bdi-checkin-form
-                </Link>{" "}
-                maker space tracking system
+                  bdi-check-in-form
+                </Link>
+                {": "}
+                BDI space tracking system.
               </Text>
             </Section>
           </Container>
@@ -153,7 +157,7 @@ SomethingWentWrongEmail.PreviewProps = {
   checkoutTime: "2025-01-01 11:00:00",
   name: "Jonathan Blowey Joey",
   email: "example@example.com",
-  checkinReason: [
+  checkinReasons: [
     "High Performance Computing",
     "using Brotar",
     "Other",
@@ -162,7 +166,8 @@ SomethingWentWrongEmail.PreviewProps = {
     "asdfasdfasdfs",
     "Fdsafdsafdsa",
   ],
-  sheetUrl: "https://example.com",
+  rating: "3",
+  //   sheetUrl: "https://example.com",
 } satisfies SomethingWentWrongEmailProps;
 
 export default SomethingWentWrongEmail;

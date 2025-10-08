@@ -7,6 +7,7 @@ import {
   postCheckIn,
   postCheckOut,
   postNewPerson,
+  sendEmail,
 } from "./actions";
 
 export const QUERIES = {
@@ -18,4 +19,5 @@ export const MUTATIONS = {
   postCheckIn,
   postNewPerson,
   postCheckOut,
+  sendEmail,
 };

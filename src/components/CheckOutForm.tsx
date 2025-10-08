@@ -64,8 +64,13 @@ export function CheckOutForm({
       ...checkin,
       rating: data.rating.toString(),
       endTime: new Date(),
+      comment: data.comment,
     };
+    console.log("checkinWithRating", checkinWithRating);
     await MUTATIONS.postCheckOut(checkinWithRating, config.sheetName);
+    if (checkinWithRating.comment) {
+      await MUTATIONS.sendEmail(checkinWithRating, lab);
+    }
     console.log("redirecting to", redirectUrl);
     router.push(redirectUrl);
   };
