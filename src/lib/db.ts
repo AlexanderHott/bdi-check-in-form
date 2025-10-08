@@ -7,7 +7,6 @@ import { isValid, parse } from "date-fns";
 import { z } from "zod";
 
 function serializeCheckIn(checkIn: CheckIn) {
-  console.log("serializeCheckIn", { checkIn });
   return [
     checkIn.person.cardId,
     checkIn.person.email,
@@ -64,8 +63,8 @@ function deserializeCheckIn(data: unknown[]): CheckIn | null {
   // return checkInSchema.safeParse(checkInRaw).data ?? null;
   const parsed = checkInSchema.safeParse(checkInRaw);
   if (parsed.error) {
-    console.log(checkInRaw);
     console.error("error parsing checkin", parsed.error.message);
+    console.error(checkInRaw);
   }
   return parsed.data ?? null;
 }

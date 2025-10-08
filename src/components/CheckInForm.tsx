@@ -65,24 +65,26 @@ export function CheckInForm({
             render={() => (
               <FormItem>
                 <FormLabel>Please select a reason for your visit</FormLabel>
-                <div className="grid auto-rows-fr grid-cols-4 grid-rows-2 gap-4">
+                <div className="grid auto-rows-fr grid-cols-4 items-stretch gap-4">
                   {reasons.map((reason) => (
                     <FormField
                       key={reason}
                       control={form.control}
                       name="reasons"
                       render={({ field }) => (
-                        <FormItem className="h-full">
-                          <FormLabel className="font-normal">
+                        <FormItem className="h-full space-y-0">
+                          <FormLabel className="font-normal h-full">
                             <Card
                               className={cn(
+                                "h-full",
                                 field.value.includes(reason) &&
                                   "border-blue-500 bg-blue-100",
                               )}
                             >
-                              <CardHeader className="flex flex-row items-center gap-2">
+                              <CardHeader className="flex flex-row items-center gap-2 space-y-0 h-full">
                                 <FormControl>
                                   <Checkbox
+                                    className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
                                     checked={field.value.includes(reason)}
                                     onCheckedChange={(checked: boolean) => {
                                       if (checked) {

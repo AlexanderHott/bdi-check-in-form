@@ -64,9 +64,7 @@ export function CardIdForm({
 
   const onSubmit = useCallback(
     async (values: FormSchema) => {
-      console.log("cardid submit form", values);
       const checkin = await QUERIES.getRecentCheckin(sheetName, values.cardId);
-      console.log("checkin", checkin);
 
       const checkinExists = checkin !== null;
       const checkinCompleted = Boolean(checkin?.endTime);
