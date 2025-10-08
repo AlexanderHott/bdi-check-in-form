@@ -1,161 +1,141 @@
-"use server";
-
-import { google } from "googleapis";
+import type { JWT } from "google-auth-library";
+import type { sheets_v4 } from "googleapis";
 import { env } from "~/env";
-import {
-  type CheckIn,
-  type NewPerson,
-  type Person,
-  personSchema,
-} from "~/schemas";
+import { google } from "googleapis";
+import { connection } from "next/server";
 
-function authGoogle() {
-  return new google.auth.JWT({
-    email: env.CLIENT_EMAIL,
-    key: env.PRIVATE_KEY,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
-}
+import { buildSheetId } from "./sheet-id";
 
-const formatDateET = (date: Date) => {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  })
-    .format(date)
-    .replace(/\//g, "/")
-    .replaceAll(",", "");
+export type SheetSchema<Row, Key> = {
+  serialize: (row: Row) => unknown[];
+  deserialize: (data: unknown[]) => Row | null;
+  getKey: (row: Row) => Key;
 };
-function getTimestamp() {
-  return formatDateET(new Date());
-}
 
-export async function getPerson(cardId: string): Promise<Person | undefined> {
-  const auth = authGoogle();
-  const sheet = google.sheets("v4");
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ScheetsSchema = Record<string, SheetSchema<any, any>>;
 
-  let rows: unknown[][] | null | undefined;
-  try {
-    const rowsRes = await sheet.spreadsheets.values.get({
-      spreadsheetId: env.SHEET_ID,
-      auth,
-      range: "people-new",
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RowType<T> = T extends SheetSchema<infer R, any> ? R : never;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type KeyType<T> = T extends SheetSchema<any, infer K> ? K : never;
+
+export class Sheets<Schema extends ScheetsSchema> {
+  private readonly auth: JWT;
+  private readonly sheetsApi: sheets_v4.Sheets;
+  private readonly tables: Schema;
+
+  constructor(tables: Schema) {
+    this.auth = new google.auth.JWT({
+      email: env.CLIENT_EMAIL,
+      key: env.PRIVATE_KEY,
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     });
-    rows = rowsRes.data.values;
-  } catch (e) {
-    console.error(e);
+
+    this.sheetsApi = google.sheets("v4");
+    this.tables = tables;
   }
 
-  const row = rows?.find((row) => row[0] === cardId);
-  console.log("row", row);
-  if (!row) return undefined;
-
-  const parseResult = personSchema.safeParse({
-    cardId: row[0],
-    email: row[1],
-    name: row[2],
-    graduateStatus: row[3],
-    graduatingYear: row[4],
-    graduateResearch: row[5],
-    majors: (row[6] as string).split(";"),
-    ethnicities: (row[7] as string).split(";"),
-    gender: row[8],
-  });
-
-  if (!parseResult.success) {
-    console.log("error parsing row", parseResult.error);
-    return undefined;
+  table<Name extends keyof Schema>(
+    name: Name,
+  ): SheetTable<RowType<Schema[Name]>, KeyType<Schema[Name]>> {
+    const converter = this.tables[name];
+    if (!converter) {
+      throw new Error(`Table ${name as string} not found`);
+    }
+    return new SheetTable(
+      name as string,
+      converter,
+      this.sheetsApi,
+      this.auth,
+    ) as SheetTable<RowType<Schema[Name]>, KeyType<Schema[Name]>>;
   }
-  return parseResult.data;
 }
 
-export async function postCheckIn(checkIn: CheckIn, table: string) {
-  console.log("checkin", checkIn);
-  const auth = authGoogle();
-  const sheet = google.sheets("v4");
+class SheetTable<Row, Key> {
+  constructor(
+    private readonly tableName: string,
+    private readonly converter: SheetSchema<Row, Key>,
+    private readonly sheetsApi: sheets_v4.Sheets,
+    private readonly auth: JWT,
+  ) {}
 
-  const now = getTimestamp();
+  async get(key: Key): Promise<Row | null> {
+    await connection();
+    const res = await this.sheetsApi.spreadsheets.values.get({
+      spreadsheetId: env.SHEET_ID,
+      auth: this.auth,
+      range: this.tableName,
+    });
 
-  const reasons: string[] = checkIn.reasons;
-  if (checkIn.reasonOther) {
-    reasons.push(checkIn.reasonOther);
+    const values = res.data.values ?? [];
+    const rows = values
+      .slice(1) // skip header row
+      .map(this.converter.deserialize)
+      .filter((row) => row !== null);
+    return rows.find((row) => this.converter.getKey(row) === key) ?? null;
   }
 
-  await sheet.spreadsheets.values.append({
-    spreadsheetId: env.SHEET_ID,
-    auth: auth,
-    range: table,
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: [
-        [
-          checkIn.person.cardId,
-          checkIn.person.email,
-          checkIn.person.name,
-          checkIn.person.graduateStatus,
-          checkIn.person.graduatingYear ?? "",
-          checkIn.person.graduateResearchStatus ?? "",
-          checkIn.person.majors.join(";"),
-          checkIn.person.ethnicities.join(";"),
-          checkIn.person.gender,
-          reasons.join(";"),
-          now,
-        ],
-      ],
-    },
-  });
-}
+  async getLast(key: Key): Promise<Row | null> {
+    await connection();
+    const res = await this.sheetsApi.spreadsheets.values.get({
+      spreadsheetId: env.SHEET_ID,
+      auth: this.auth,
+      range: this.tableName,
+    });
 
-export async function postNewPerson(person: NewPerson) {
-  console.log("new person", person);
-  const auth = authGoogle();
-  const sheet = google.sheets("v4");
-
-  const now = getTimestamp();
-
-  const majors: string[] = person.majors.filter((maj) => maj !== "Other");
-  if (person.majorOther) {
-    majors.push(`other:${person.majorOther}`);
+    const values = res.data.values ?? [];
+    const rows = values
+      .slice(1) // skip header row
+      .map(this.converter.deserialize)
+      .filter((row) => row !== null);
+    rows.reverse();
+    return rows.find((row) => this.converter.getKey(row) === key) ?? null;
   }
 
-  const ethnicities: string[] = person.ethnicities.filter(
-    (eth) => eth !== "Other",
-  );
-  if (person.ethnicityOther) {
-    ethnicities.push(`other:${person.ethnicityOther}`);
+  async add(row: Row): Promise<void> {
+    await connection();
+    await this.sheetsApi.spreadsheets.values.append({
+      spreadsheetId: env.SHEET_ID,
+      auth: this.auth,
+      range: this.tableName,
+      valueInputOption: "USER_ENTERED", // WARNING: no sanitization
+      requestBody: {
+        values: [this.converter.serialize(row)],
+      },
+    });
   }
+  async updateLast(key: Key, row: Row): Promise<void> {
+    await connection();
+    const res = await this.sheetsApi.spreadsheets.values.get({
+      spreadsheetId: env.SHEET_ID,
+      auth: this.auth,
+      range: this.tableName,
+    });
 
-  let graduateStatus: string = person.graduateStatus;
-  if (person.graduateStatusOther) {
-    graduateStatus = person.graduateStatusOther;
+    const values = res.data.values ?? [];
+    const rows = values
+      .slice(1) // skip header row
+      .map(this.converter.deserialize)
+      .filter((row) => row !== null);
+    rows.reverse();
+    const idxReversed = rows.findIndex(
+      (row) => this.converter.getKey(row) === key,
+    );
+    if (idxReversed === -1) return;
+    const idx = rows.length - idxReversed - 1;
+
+    const serialized = this.converter.serialize(row);
+    const sheetId = buildSheetId(this.tableName, idx + 1, serialized.length); // +1 because we skip the header row
+
+    await this.sheetsApi.spreadsheets.values.update({
+      auth: this.auth,
+      range: sheetId,
+      spreadsheetId: env.SHEET_ID,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [serialized],
+      },
+    });
   }
-
-  await sheet.spreadsheets.values.append({
-    spreadsheetId: env.SHEET_ID,
-    auth: auth,
-    range: "people-new",
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: [
-        [
-          person.cardId,
-          person.email,
-          person.name,
-          graduateStatus,
-          person.graduatingYear ?? "",
-          person.graduateResearchStatus ?? "",
-          majors.join(";"),
-          ethnicities.join(";"),
-          person.gender,
-          now,
-        ],
-      ],
-    },
-  });
 }

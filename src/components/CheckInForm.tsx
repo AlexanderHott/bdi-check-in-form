@@ -1,8 +1,10 @@
 "use client";
-import { postCheckIn } from "~/lib/sheets";
+
+import type { Lab, NewCheckIn, Person } from "~/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { Button } from "~/components/ui/button";
+import { Card, CardHeader } from "~/components/ui/card";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -11,43 +13,43 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { useRouter } from "next/navigation";
-import { Card, CardHeader } from "~/components/ui/card";
-import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
-import { type Person, type CheckIn, checkInSchmas } from "~/schemas";
-import { type z } from "zod";
+import { MUTATIONS } from "~/lib/server-actions";
 import { cn } from "~/lib/utils";
+import { CONFIG, newCheckInFormSchema } from "~/schemas";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+
 import { Loading } from "./Loading";
 import { TimeOut } from "./TimeOut";
 
 export function CheckInForm({
   person,
-  schemaName,
-  reasons,
+  lab,
   redirectUrl,
-  sheetName,
 }: {
   person: Person;
-  schemaName: keyof typeof checkInSchmas;
-  reasons: Readonly<CheckIn["reasons"]>;
+  lab: Lab;
   redirectUrl: string;
-  sheetName: string;
 }) {
+  const config = CONFIG[lab];
+
   const router = useRouter();
-  const schema = checkInSchmas[schemaName];
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
+  const reasons = config.reasons;
+  const sheetName = config.sheetName;
+  const form = useForm<NewCheckIn>({
+    resolver: zodResolver(newCheckInFormSchema),
     defaultValues: {
       person: person,
       reasons: [],
       reasonOther: "",
+      startTime: new Date(),
     },
   });
 
-  async function onSubmit(values: CheckIn) {
+  async function onSubmit(values: NewCheckIn) {
     console.log("on submit", { redirectUrl, sheetName, values });
-    await postCheckIn(values, sheetName);
+    await MUTATIONS.postCheckIn(values, sheetName);
     router.push(redirectUrl);
   }
 
@@ -74,27 +76,27 @@ export function CheckInForm({
                           <FormLabel className="font-normal">
                             <Card
                               className={cn(
-                                // @ts-expect-error not specific enough generics
-                                field.value?.includes(reason) &&
+                                field.value.includes(reason) &&
                                   "border-blue-500 bg-blue-100",
                               )}
                             >
                               <CardHeader className="flex flex-row items-center gap-2">
                                 <FormControl>
                                   <Checkbox
-                                    // @ts-expect-error not specific enough generics
-                                    checked={field.value?.includes(reason)}
+                                    checked={field.value.includes(reason)}
                                     onCheckedChange={(checked: boolean) => {
-                                      return checked
-                                        ? field.onChange([
-                                            ...field.value,
-                                            reason,
-                                          ])
-                                        : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== reason,
-                                            ),
-                                          );
+                                      if (checked) {
+                                        field.onChange([
+                                          ...field.value,
+                                          reason,
+                                        ]);
+                                      } else {
+                                        field.onChange(
+                                          field.value.filter(
+                                            (value) => value !== reason,
+                                          ),
+                                        );
+                                      }
                                     }}
                                   />
                                 </FormControl>
@@ -118,7 +120,7 @@ export function CheckInForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Other</FormLabel>
-                <Input {...field} />
+                <Input autoFocus {...field} />
                 <FormMessage />
               </FormItem>
             )}
@@ -132,7 +134,9 @@ export function CheckInForm({
               {form.formState.isSubmitting ? <Loading /> : "Submit"}
             </Button>
             <Button
-              onClick={() => router.back()}
+              onClick={() => {
+                router.back();
+              }}
               variant={"secondary"}
               type="button"
               className="w-full"

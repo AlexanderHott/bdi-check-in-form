@@ -1,9 +1,12 @@
 "use client";
 
+import type { z } from "zod";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Loading } from "~/components/Loading";
+import { TimeOut } from "~/components/TimeOut";
 import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -12,6 +15,8 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -19,33 +24,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Input } from "~/components/ui/input";
-import { RadioGroupItem, RadioGroup } from "~/components/ui/radio-group";
-import { postNewPerson } from "~/lib/sheets";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "~/components/ui/collapsible";
-import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
-import { useRef, useState } from "react";
-import { Checkbox } from "~/components/ui/checkbox";
+import { postNewPerson } from "~/lib/server-actions/actions";
+import { cn } from "~/lib/utils";
 import {
   ETHNICITIES,
   GENDERS,
+  getYears,
   GRADUATE_STATUS,
   MAJORS,
-  newPersonSchema,
-  YEARS,
-  type NewPerson,
+  newPersonFormSchema,
+  newPersonFormSchemaToPerson,
 } from "~/schemas";
-import { Loading } from "~/components/Loading";
-import { TimeOut } from "~/components/TimeOut";
+import { ArrowDown, ArrowUp, ChevronDown } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+
+type NewPersonFormSchema = z.infer<typeof newPersonFormSchema>;
 
 export function NewPersonForm({ cardId }: { cardId: string }) {
   const router = useRouter();
-  const form = useForm<NewPerson>({
-    resolver: zodResolver(newPersonSchema),
+  const form = useForm<NewPersonFormSchema>({
+    resolver: zodResolver(newPersonFormSchema),
     defaultValues: {
       cardId: cardId,
       email: "",
@@ -77,11 +76,12 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect");
 
-  async function onSubmit(value: NewPerson) {
-    console.log("new person", value);
-    await postNewPerson(value);
-    const decodedRedirectUrl = decodeURI(redirectUrl ?? "/");
-    router.push(decodedRedirectUrl);
+  async function onSubmit(value: NewPersonFormSchema) {
+    const person = newPersonFormSchemaToPerson(value);
+    await postNewPerson(person);
+
+    const redirectUrlDecoded = decodeURI(redirectUrl ?? "/");
+    router.push(redirectUrlDecoded);
   }
 
   return (
@@ -190,7 +190,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormItem>
                   <FormLabel>Other</FormLabel>
                   <FormControl>
-                    <Input placeholder="Graduate Status" {...field} />
+                    <Input placeholder="What best describes you?" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -209,7 +209,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                   <FormLabel>Graduating Year</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value?.toString()}
+                    defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -217,7 +217,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {YEARS.map((year) => (
+                      {getYears().map((year) => (
                         <SelectItem key={year} value={year}>
                           {year}
                         </SelectItem>
@@ -241,7 +241,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                   <FormLabel>Graduate Research Status</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value?.toString()}
+                    defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -287,20 +287,22 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                         >
                           <FormControl>
                             <Checkbox
-                              checked={field.value?.includes(major)}
+                              checked={field.value.includes(major)}
                               onCheckedChange={(checked: boolean) => {
                                 if (major === "Other" && checked) {
                                   setMajorShowOther(true);
                                 } else if (major === "Other" && !checked) {
                                   setMajorShowOther(false);
                                 }
-                                return checked
-                                  ? field.onChange([...field.value, major])
-                                  : field.onChange(
-                                      field.value?.filter(
-                                        (value: string) => value !== major,
-                                      ),
-                                    );
+                                if (checked) {
+                                  field.onChange([...field.value, major]);
+                                } else {
+                                  field.onChange(
+                                    field.value.filter(
+                                      (value: string) => value !== major,
+                                    ),
+                                  );
+                                }
                               }}
                             />
                           </FormControl>
@@ -329,7 +331,10 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormItem>
                   <FormLabel>Other major</FormLabel>
                   <FormControl>
-                    <Input placeholder="major" {...field} />
+                    <Input
+                      placeholder="Which degree or department best describes you?"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -363,20 +368,22 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                         >
                           <FormControl>
                             <Checkbox
-                              checked={field.value?.includes(ethnicity)}
+                              checked={field.value.includes(ethnicity)}
                               onCheckedChange={(checked: boolean) => {
                                 if (ethnicity === "Other" && checked) {
                                   setEthnicityShowOther(true);
                                 } else if (ethnicity === "Other" && !checked) {
                                   setEthnicityShowOther(false);
                                 }
-                                return checked
-                                  ? field.onChange([...field.value, ethnicity])
-                                  : field.onChange(
-                                      field.value?.filter(
-                                        (value: string) => value !== ethnicity,
-                                      ),
-                                    );
+                                if (checked) {
+                                  field.onChange([...field.value, ethnicity]);
+                                } else {
+                                  field.onChange(
+                                    field.value.filter(
+                                      (value: string) => value !== ethnicity,
+                                    ),
+                                  );
+                                }
                               }}
                             />
                           </FormControl>
@@ -406,7 +413,10 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormItem>
                   <FormLabel>Other ethnicity</FormLabel>
                   <FormControl>
-                    <Input placeholder="ethnicity" {...field} />
+                    <Input
+                      placeholder="Which race/ethnicity best describes you?"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -427,7 +437,6 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                     className="flex flex-col space-y-1"
                     onValueChange={(value: string) => {
                       setGenderShowOther(value === "Other");
-                      console.log(value === "Other");
                       field.onChange(value);
                     }}
                     defaultValue={field.value}
@@ -453,7 +462,10 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                   <FormLabel>Other Gender</FormLabel>
                   <FormControl>
                     <FormControl>
-                      <Input placeholder="Other" {...field} />
+                      <Input
+                        placeholder="Which gender best describes you?"
+                        {...field}
+                      />
                     </FormControl>
                   </FormControl>
                   <FormMessage />
@@ -461,6 +473,9 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
               )}
             />
           )}
+          {/* 
+            Submit and back button 
+          */}
           <div className="flex gap-4">
             <Button
               type="submit"
@@ -470,7 +485,9 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
               {form.formState.isSubmitting ? <Loading /> : "Submit"}
             </Button>
             <Button
-              onClick={() => router.back()}
+              onClick={() => {
+                router.back();
+              }}
               variant={"secondary"}
               type="button"
               className="w-full"
@@ -496,23 +513,36 @@ function RadioItem({ value }: { value: string }) {
 }
 
 function WhyDoWeAsk() {
+  const [isExpanded, setIsExpanded] = useState(false);
   return (
-    <Collapsible>
-      <CollapsibleTrigger className="flex items-center gap-1 text-muted-foreground">
-        Why do we ask for this? <ChevronsUpDown size={16} />
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <p className="">
+    <div className="w-full">
+      <button
+        type="button"
+        onClick={() => {
+          setIsExpanded(!isExpanded);
+        }}
+        className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        aria-expanded={isExpanded}
+      >
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 transition-transform duration-200",
+            isExpanded ? "rotate-180" : "",
+          )}
+        />
+        <span className="underline underline-offset-4">
+          Why do we ask for this?
+        </span>
+      </button>
+
+      {isExpanded && (
+        <div className="mt-2 text-sm text-muted-foreground pl-5 border-l-2 border-muted animate-in fade-in slide-in-from-top-1 duration-200">
           At Brandeis Design and Innovation, we are committed to building a
           diverse and inclusive community. Collecting demographic information
           helps us to measure our efforts toward these goals!
-        </p>
-        <p>
-          All demographic questions are optional - but it helps us if you are
-          willing to answer them!
-        </p>
-      </CollapsibleContent>
-    </Collapsible>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -526,17 +556,19 @@ const scrollDown = () => {
 
 function ScrollButtons() {
   return (
-    <div className="fixed bottom-4 right-4">
+    <div className="fixed bottom-4 right-4 z-50">
       <div className="flex flex-col gap-2">
         <button
           onClick={scrollUp}
-          className="flex h-32 w-32 items-center justify-center rounded-full border bg-white"
+          className="flex h-32 w-32 items-center justify-center rounded-full border  backdrop-blur-sm"
+          aria-label="Scroll up"
         >
           <ArrowUp size={64} />
         </button>
         <button
           onClick={scrollDown}
-          className="flex h-32 w-32 items-center justify-center rounded-full border bg-white"
+          className="flex h-32 w-32 items-center justify-center rounded-full border  backdrop-blur-sm"
+          aria-label="Scroll down"
         >
           <ArrowDown size={64} />
         </button>

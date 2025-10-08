@@ -1,11 +1,8 @@
 "use client";
 
+import type { Lab } from "~/schemas";
+import { useCallback } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import {
   Form,
@@ -17,6 +14,12 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { QUERIES } from "~/lib/server-actions";
+import { CONFIG } from "~/schemas";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const formSchema = z.object({
   cardId: z
@@ -35,14 +38,20 @@ const formSchema = z.object({
 });
 type FormSchema = z.infer<typeof formSchema>;
 
+type EndsWithSlash = `${string}/`;
+
 export function CardIdForm({
   redirect, // must end with a "/"
+  lab,
 }: {
-  redirect: string;
+  redirect: EndsWithSlash;
+  lab: Lab;
 }) {
   if (!redirect.endsWith("/")) {
-    throw new Error("redirect must end with a /");
+    throw new Error("redirect prop must end with a /");
   }
+  const config = CONFIG[lab];
+  const sheetName = config.sheetName;
 
   const router = useRouter();
   const form = useForm<FormSchema>({
@@ -54,31 +63,21 @@ export function CardIdForm({
   });
 
   const onSubmit = useCallback(
-    (values: FormSchema) => {
-      console.log(values);
-      router.push(redirect + values.cardId.toString());
-    },
-    [router, redirect],
-  );
+    async (values: FormSchema) => {
+      console.log("cardid submit form", values);
+      const checkin = await QUERIES.getRecentCheckin(sheetName, values.cardId);
+      console.log("checkin", checkin);
 
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === "cardId") {
-        const { cardId } = value;
-        if (cardId?.length === 15) {
-          form
-            .trigger()
-            .then((isValid) => {
-              if (isValid) {
-                void form.handleSubmit(onSubmit)();
-              }
-            })
-            .catch((e) => console.error("Error submitting form " + e));
-        }
+      const checkinExists = checkin !== null;
+      const checkinCompleted = Boolean(checkin?.endTime);
+      if (!checkinExists || checkinCompleted) {
+        router.push(redirect + "/check-in/" + values.cardId);
+      } else {
+        router.push(redirect + "/check-out/" + values.cardId);
       }
-    });
-    return () => subscription.unsubscribe();
-  }, [form, form.watch, onSubmit]);
+    },
+    [router, redirect, sheetName],
+  );
 
   return (
     <Form {...form}>
@@ -95,14 +94,25 @@ export function CardIdForm({
                   <Input
                     autoFocus
                     type="number"
-                    disabled={
-                      form.formState.isSubmitted &&
-                      (form.formState.isValid || form.formState.isValidating)
-                    }
+                    disabled={form.formState.isSubmitting}
                     placeholder="603305000000000"
                     onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                      if (e.currentTarget.value.length <= 15)
-                        return onChange(e);
+                      const CARD_ID_LENGTH = 15;
+                      onChange(e);
+                      if (e.currentTarget.value.length < CARD_ID_LENGTH) {
+                        return;
+                      }
+
+                      form
+                        .trigger()
+                        .then((isValid) => {
+                          if (isValid) {
+                            void form.handleSubmit(onSubmit)();
+                          }
+                        })
+                        .catch((e: unknown) => {
+                          console.error(`Error submitting form ${String(e)}`);
+                        });
                     }}
                     onBlur={() => {
                       onBlur();
@@ -124,13 +134,10 @@ export function CardIdForm({
           <Button
             type="submit"
             className="w-full"
-            disabled={
-              form.formState.isSubmitted &&
-              (form.formState.isValid || form.formState.isValidating)
-            }
+            disabled={form.formState.isSubmitting}
           >
-            {form.formState.isLoading ? (
-              <Loader className="animate-spin" />
+            {form.formState.isSubmitting ? (
+              <Loader2 className="animate-spin" />
             ) : (
               "Submit"
             )}
@@ -139,7 +146,9 @@ export function CardIdForm({
             type="button"
             className="w-full"
             variant={"secondary"}
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              window.location.reload();
+            }}
           >
             Clear
           </Button>

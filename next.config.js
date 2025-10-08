@@ -12,9 +12,11 @@ const config = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+
+  reactCompiler: true,
   experimental: {
     ppr: true,
-    reactCompiler: true,
+    cacheComponents: true,
   },
 };
 

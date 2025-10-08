@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 export function TimeOut({
@@ -32,6 +32,10 @@ export function TimeOut({
   }, [href, router, timeout]);
 
   useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      return;
+    }
+
     timerRef.current = setTimeout(() => {
       router.replace(href);
     }, timeout * 1000);
