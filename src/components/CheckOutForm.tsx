@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { MUTATIONS } from "~/lib/server-actions";
 import { cn } from "~/lib/utils";
 import { CONFIG } from "~/schemas";
+import { Loader2 } from "lucide-react";
 // import { formatDuration, intervalToDuration } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
@@ -196,7 +197,17 @@ export function CheckOutForm({
             />
           )}
 
-          <Button>Submit</Button>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              "Submit"
+            )}
+          </Button>
 
           {/* <p>dont forget to return your items</p> */}
         </form>
