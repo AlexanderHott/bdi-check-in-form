@@ -1,3 +1,4 @@
+import { CheckForUpdates } from "~/components/CheckForUpdates";
 import {
   Card,
   CardDescription,
@@ -25,6 +26,7 @@ export default function HomePage() {
         desc="Specialized computing, ..."
         href="/dsl"
       />
+      <CheckForUpdates />
     </div>
   );
 }

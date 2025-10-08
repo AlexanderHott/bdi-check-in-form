@@ -1,3 +1,4 @@
+import { CheckForUpdates } from "~/components/CheckForUpdates";
 import { SignOutReminder } from "~/components/SignOutReminder";
 
 import { CardIdForm } from "../CardIdForm";
@@ -8,6 +9,7 @@ export default function ALPage() {
       <h1 className="mb-8 text-4xl font-bold">Automation Lab Check-in</h1>
       <SignOutReminder />
       <CardIdForm redirect="/al/" lab="al" />
+      <CheckForUpdates />
     </div>
   );
 }

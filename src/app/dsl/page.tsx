@@ -1,3 +1,4 @@
+import { CheckForUpdates } from "~/components/CheckForUpdates";
 import { SignOutReminder } from "~/components/SignOutReminder";
 
 import { CardIdForm } from "../CardIdForm";
@@ -10,6 +11,7 @@ export default function DSLabPage() {
       </h1>
       <SignOutReminder />
       <CardIdForm redirect="/dsl/" lab="dsl" />
+      <CheckForUpdates />
     </div>
   );
 }
