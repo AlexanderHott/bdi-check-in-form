@@ -14,10 +14,10 @@ const config = {
   },
 
   reactCompiler: true,
-  experimental: {
-    ppr: true,
-    cacheComponents: true,
-  },
+  // experimental: {
+  //   ppr: true,
+  //   cacheComponents: true,
+  // },
 };
 
 export default config;

@@ -175,6 +175,7 @@ export const ML_REASONS = [
   "Vinyl Cutting",
   "Consultation",
   "Club Meeting",
+  "BDI staff meeting",
 ] as const;
 
 export const AL_REASONS = [
@@ -186,6 +187,7 @@ export const AL_REASONS = [
   "Hand Tools",
   "Consultation",
   "Club Meeting",
+  "BDI staff meeting",
 ] as const;
 
 export const DSL_REASONS = [
@@ -197,6 +199,7 @@ export const DSL_REASONS = [
   "Equipment Lending",
   "Consultation",
   "Club Meeting",
+  "BDI staff meeting",
 ] as const;
 
 export const newCheckInFormSchema = z

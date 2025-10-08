@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { MUTATIONS } from "~/lib/server-actions";
 import { cn } from "~/lib/utils";
 import { CONFIG } from "~/schemas";
-import { formatDuration, intervalToDuration } from "date-fns";
+// import { formatDuration, intervalToDuration } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -51,11 +51,11 @@ export function CheckOutForm({
     name: "somethingBroken",
     exact: true,
   });
-  const endTime = useWatch({
-    control: form.control,
-    name: "endTime",
-    exact: true,
-  });
+  // const endTime = useWatch({
+  //   control: form.control,
+  //   name: "endTime",
+  //   exact: true,
+  // });
   const router = useRouter();
 
   const onSubmit = async (data: CheckOut) => {
@@ -75,12 +75,12 @@ export function CheckOutForm({
     router.push(redirectUrl);
   };
 
-  const startTimeText = checkin.startTime.toLocaleTimeString();
-  const endTimeText = endTime.toLocaleTimeString();
-  const durationText = formatDuration(
-    intervalToDuration({ start: checkin.startTime, end: endTime }),
-    { format: ["hours", "minutes"] },
-  );
+  // const startTimeText = checkin.startTime.toLocaleTimeString();
+  // const endTimeText = endTime.toLocaleTimeString();
+  // const durationText = formatDuration(
+  //   intervalToDuration({ start: checkin.startTime, end: endTime }),
+  //   { format: ["hours", "minutes"] },
+  // );
 
   return (
     <div>
