@@ -9,15 +9,10 @@ const config = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-
   reactCompiler: true,
-  // experimental: {
-  //   ppr: true,
-  //   cacheComponents: true,
-  // },
+  experimental: {
+    cacheComponents: true,
+  },
 };
 
 export default config;
