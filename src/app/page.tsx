@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CheckForUpdates } from "~/components/CheckForUpdates";
 import {
   Card,
@@ -5,26 +6,25 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import Link from "next/link";
 
 export default function HomePage() {
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="text-4xl font-bold">Select Space</h1>
+      <h1 className="font-bold text-4xl">Select Space</h1>
       <LocationCard
-        title="Maker Lab"
         desc="3D Printing, Laser Cutting..."
         href="/ml"
+        title="Maker Lab"
       />
       <LocationCard
-        title="Automation Lab"
         desc="Soldering, Electronics..."
         href="/al"
+        title="Automation Lab"
       />
       <LocationCard
-        title="Digital Scholarship Lab"
         desc="Specialized computing, ..."
         href="/dsl"
+        title="Digital Scholarship Lab"
       />
       <CheckForUpdates />
     </div>
@@ -50,17 +50,18 @@ function LocationCard({
               <CardDescription>{desc}</CardDescription>
             </div>
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
               className="size-6 transition-transform duration-150 ease-in-out group-hover:translate-x-2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
             >
+              <title>Go to location</title>
               <path
+                d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"
               />
             </svg>
           </div>

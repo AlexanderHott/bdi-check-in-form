@@ -5,7 +5,7 @@ export function checkInValid(
   now: Date | undefined = undefined,
 ): boolean {
   now ??= new Date();
-  if (!(input instanceof Date) || isNaN(input.getTime())) {
+  if (!(input instanceof Date) || Number.isNaN(input.getTime())) {
     throw new Error("Invalid date input");
   }
 

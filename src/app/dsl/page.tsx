@@ -5,12 +5,12 @@ import { CardIdForm } from "../CardIdForm";
 
 export default function DSLabPage() {
   return (
-    <div className="w-full h-full flex flex-col gap-4">
-      <h1 className="mb-8 text-4xl font-bold">
+    <div className="flex h-full w-full flex-col gap-4">
+      <h1 className="mb-8 font-bold text-4xl">
         Digital Scholarship Lab Check-in
       </h1>
       <SignOutReminder />
-      <CardIdForm redirect="/dsl/" lab="dsl" />
+      <CardIdForm lab="dsl" redirect="/dsl/" />
       <CheckForUpdates />
     </div>
   );

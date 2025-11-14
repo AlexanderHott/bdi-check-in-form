@@ -3,7 +3,7 @@ export default function ALLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div>
-      <h1 className="mb-8 text-4xl font-bold">
+      <h1 className="mb-8 font-bold text-4xl">
         Digital Scholarship Lab Check-out Form
       </h1>
       {children}

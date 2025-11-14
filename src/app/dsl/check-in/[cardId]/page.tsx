@@ -1,6 +1,6 @@
+import { redirect } from "next/navigation";
 import { CheckInForm } from "~/components/CheckInForm";
 import { getPerson } from "~/lib/server-actions/actions";
-import { redirect } from "next/navigation";
 
 export default async function MLCheckInPage({
   params,
@@ -16,5 +16,5 @@ export default async function MLCheckInPage({
     const redirectUrl = encodeURI(`/dsl/check-in/${cardId}`);
     redirect(`/new/${cardId}?redirect=${redirectUrl}`);
   }
-  return <CheckInForm person={person} redirectUrl="/dsl" lab="dsl" />;
+  return <CheckInForm lab="dsl" person={person} redirectUrl="/dsl" />;
 }

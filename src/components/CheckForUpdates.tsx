@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { ArrowRightIcon, Loader2Icon } from "lucide-react";
 import packageJson from "~/../package.json";
 import { Button } from "~/components/ui/button";
-import { ArrowRightIcon, Loader2Icon } from "lucide-react";
 
 function AnimatedDot() {
   return (
@@ -34,8 +34,7 @@ export function CheckForUpdates() {
 
   return (
     <Button
-      variant={needsUpdate ? "outline" : "ghost"}
-      className={"text-sm absolute bottom-4 right-4"}
+      className={"absolute right-4 bottom-4 text-sm"}
       onClick={() => {
         if (needsUpdate) {
           window.location.reload();
@@ -43,10 +42,11 @@ export function CheckForUpdates() {
           void refetch();
         }
       }}
+      variant={needsUpdate ? "outline" : "ghost"}
     >
       <ButtonContent
-        isLoading={isPending || isRefetching}
         clientVersion={packageJson.version}
+        isLoading={isPending || isRefetching}
         serverVersion={data?.version ?? ""}
       />
       {needsUpdate && <AnimatedDot />}

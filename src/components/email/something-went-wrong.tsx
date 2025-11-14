@@ -7,8 +7,8 @@ import {
   Heading,
   Html,
   Link,
-  pixelBasedPreset,
   Preview,
+  pixelBasedPreset,
   Row,
   Section,
   Tailwind,
@@ -54,12 +54,12 @@ export function SomethingWentWrongEmail(props: SomethingWentWrongEmailProps) {
           <Container className="mx-auto my-[40px] max-w-[600px] rounded border border-[#eaeaea] border-solid p-[20px]">
             {/* Header */}
             <Section className="">
-              <Row className="bg-black mx-auto p-4">
+              <Row className="mx-auto bg-black p-4">
                 <Column align="center">
-                  <AlertTriangle className="text-white w-12 h-12" />
+                  <AlertTriangle className="h-12 w-12 text-white" />
                 </Column>
                 <Column align="center">
-                  <Heading className="text-white text-2xl">
+                  <Heading className="text-2xl text-white">
                     Something went wrong in the {props.lab}
                   </Heading>
                 </Column>
@@ -67,7 +67,7 @@ export function SomethingWentWrongEmail(props: SomethingWentWrongEmailProps) {
             </Section>
 
             {/* Info */}
-            <Section className="mt-4 p-4 bg-neutral-100">
+            <Section className="mt-4 bg-neutral-100 p-4">
               <InfoRow label="Lab" value={props.lab} />
               <InfoRow label="Person Name" value={props.name} />
               <InfoRow label="Email" value={props.email} />
@@ -101,8 +101,8 @@ export function SomethingWentWrongEmail(props: SomethingWentWrongEmailProps) {
               <Section className="mt-4">
                 <Button
                   // href={`mailto:${props.email}&subject=${props.lab} visit ${props.checkinTime} - ${props.checkoutTime}`}
+                  className="mr-4 rounded bg-[#000000] px-5 py-3 text-center font-semibold text-[12px] text-white no-underline"
                   href={`mailto:${props.email}?subject=${props.lab} visit ${props.checkinTime} followup`}
-                  className="rounded bg-[#000000] px-5 py-3 text-center text-[12px] text-white no-underline font-semibold mr-4"
                 >
                   Follow up
                 </Button>
@@ -133,8 +133,8 @@ export function SomethingWentWrongEmail(props: SomethingWentWrongEmailProps) {
                 This is an automated incident notification from the{" "}
                 <Link
                   href="https://bdi-check-in-form.vercel.app/"
-                  target="_blank"
                   style={{ ...link, color: "#898989" }}
+                  target="_blank"
                 >
                   bdi-check-in-form
                 </Link>

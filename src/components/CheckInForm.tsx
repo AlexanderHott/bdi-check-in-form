@@ -1,7 +1,8 @@
 "use client";
 
-import type { Lab, NewCheckIn, Person } from "~/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { Button } from "~/components/ui/button";
 import { Card, CardHeader } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -16,9 +17,8 @@ import {
 import { Input } from "~/components/ui/input";
 import { MUTATIONS } from "~/lib/server-actions";
 import { cn } from "~/lib/utils";
+import type { Lab, NewCheckIn, Person } from "~/schemas";
 import { CONFIG, newCheckInFormSchema } from "~/schemas";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 
 import { Loading } from "./Loading";
 import { TimeOut } from "./TimeOut";
@@ -58,7 +58,7 @@ export function CheckInForm({
       <TimeOut href={redirectUrl} />
       <h2 className="text-lg">Welcome, {person.name}</h2>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
             control={form.control}
             name="reasons"
@@ -68,12 +68,12 @@ export function CheckInForm({
                 <div className="grid auto-rows-fr grid-cols-4 items-stretch gap-4">
                   {reasons.map((reason) => (
                     <FormField
-                      key={reason}
                       control={form.control}
+                      key={reason}
                       name="reasons"
                       render={({ field }) => (
                         <FormItem className="h-full space-y-0">
-                          <FormLabel className="font-normal h-full">
+                          <FormLabel className="h-full font-normal">
                             <Card
                               className={cn(
                                 "h-full",
@@ -81,11 +81,11 @@ export function CheckInForm({
                                   "border-blue-500 bg-blue-100",
                               )}
                             >
-                              <CardHeader className="flex flex-row items-center gap-2 space-y-0 h-full">
+                              <CardHeader className="flex h-full flex-row items-center gap-2 space-y-0">
                                 <FormControl>
                                   <Checkbox
-                                    className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
                                     checked={field.value.includes(reason)}
+                                    className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
                                     onCheckedChange={(checked: boolean) => {
                                       if (checked) {
                                         field.onChange([
@@ -129,19 +129,19 @@ export function CheckInForm({
           />
           <div className="flex gap-4">
             <Button
-              type="submit"
               className="w-full"
               disabled={form.formState.isSubmitting}
+              type="submit"
             >
               {form.formState.isSubmitting ? <Loading /> : "Submit"}
             </Button>
             <Button
+              className="w-full"
               onClick={() => {
                 router.back();
               }}
-              variant={"secondary"}
               type="button"
-              className="w-full"
+              variant={"secondary"}
             >
               Back
             </Button>

@@ -1,5 +1,5 @@
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { DoorOpenIcon } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 
 export function SignOutReminder() {
   return (

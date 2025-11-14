@@ -1,8 +1,8 @@
 import type { JWT } from "google-auth-library";
 import type { sheets_v4 } from "googleapis";
-import { env } from "~/env";
 import { google } from "googleapis";
 import { connection } from "next/server";
+import { env } from "~/env";
 
 import { buildSheetId } from "./sheet-id";
 
@@ -12,12 +12,12 @@ export type SheetSchema<Row, Key> = {
   getKey: (row: Row) => Key;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: we need to be able to pass any type to the SheetSchema
 export type ScheetsSchema = Record<string, SheetSchema<any, any>>;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: we need to be able to pass any type to the SheetSchema
 type RowType<T> = T extends SheetSchema<infer R, any> ? R : never;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: we need to be able to pass any type to the SheetSchema
 type KeyType<T> = T extends SheetSchema<any, infer K> ? K : never;
 
 export class Sheets<Schema extends ScheetsSchema> {

@@ -1,8 +1,11 @@
 "use client";
 
-import type { z } from "zod";
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowDown, ArrowUp, ChevronDown } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import type { z } from "zod";
 import { Loading } from "~/components/Loading";
 import { TimeOut } from "~/components/TimeOut";
 import { Button } from "~/components/ui/button";
@@ -29,15 +32,12 @@ import { cn } from "~/lib/utils";
 import {
   ETHNICITIES,
   GENDERS,
-  getYears,
   GRADUATE_STATUS,
+  getYears,
   MAJORS,
   newPersonFormSchema,
   newPersonFormSchemaToPerson,
 } from "~/schemas";
-import { ArrowDown, ArrowUp, ChevronDown } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
 
 type NewPersonFormSchema = z.infer<typeof newPersonFormSchema>;
 
@@ -91,8 +91,8 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
       <WhyDoWeAsk />
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-8 pb-16"
+          onSubmit={form.handleSubmit(onSubmit)}
         >
           {/* 
             Email field 
@@ -106,8 +106,8 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormControl>
                   <Input
                     autoFocus
-                    type="email"
                     placeholder="name@brandeis.edu"
+                    type="email"
                     {...field}
                   />
                 </FormControl>
@@ -142,6 +142,8 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormLabel>What best describes you?</FormLabel>
                 <FormControl>
                   <RadioGroup
+                    className="flex flex-col space-y-1"
+                    defaultValue={field.value}
                     onValueChange={(
                       value: (typeof GRADUATE_STATUS)[number],
                     ) => {
@@ -167,8 +169,6 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
 
                       field.onChange(value);
                     }}
-                    defaultValue={field.value}
-                    className="flex flex-col space-y-1"
                   >
                     {GRADUATE_STATUS.map((gs) => (
                       <RadioItem key={gs} value={gs} />
@@ -208,8 +208,8 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormItem>
                   <FormLabel>Graduating Year</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
                     defaultValue={field.value}
+                    onValueChange={field.onChange}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -240,8 +240,8 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormItem>
                   <FormLabel>Graduate Research Status</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
                     defaultValue={field.value}
+                    onValueChange={field.onChange}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -276,14 +276,14 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 </div>
                 {MAJORS.map((major) => (
                   <FormField
-                    key={major}
                     control={form.control}
+                    key={major}
                     name="majors"
                     render={({ field }) => {
                       return (
                         <FormItem
-                          key={major}
                           className="flex flex-row items-start space-x-3 space-y-0"
+                          key={major}
                         >
                           <FormControl>
                             <Checkbox
@@ -325,7 +325,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
             name="majorOther"
             render={({ field }) => {
               if (!majorShowOther) {
-                return <></>;
+                return <div />;
               }
               return (
                 <FormItem>
@@ -357,14 +357,14 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 </div>
                 {ETHNICITIES.map((ethnicity) => (
                   <FormField
-                    key={ethnicity}
                     control={form.control}
+                    key={ethnicity}
                     name="ethnicities"
                     render={({ field }) => {
                       return (
                         <FormItem
-                          key={ethnicity}
                           className="flex flex-row items-start space-x-3 space-y-0"
+                          key={ethnicity}
                         >
                           <FormControl>
                             <Checkbox
@@ -407,7 +407,7 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
             name="ethnicityOther"
             render={({ field }) => {
               if (!ethnicityShowOther) {
-                return <></>;
+                return <div />;
               }
               return (
                 <FormItem>
@@ -435,11 +435,11 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
                 <FormControl>
                   <RadioGroup
                     className="flex flex-col space-y-1"
+                    defaultValue={field.value}
                     onValueChange={(value: string) => {
                       setGenderShowOther(value === "Other");
                       field.onChange(value);
                     }}
-                    defaultValue={field.value}
                   >
                     {GENDERS.map((gs) => (
                       <RadioItem key={gs} value={gs} />
@@ -478,19 +478,19 @@ export function NewPersonForm({ cardId }: { cardId: string }) {
           */}
           <div className="flex gap-4">
             <Button
-              type="submit"
               className="w-full"
               disabled={form.formState.isSubmitting}
+              type="submit"
             >
               {form.formState.isSubmitting ? <Loading /> : "Submit"}
             </Button>
             <Button
+              className="w-full"
               onClick={() => {
                 router.back();
               }}
-              variant={"secondary"}
               type="button"
-              className="w-full"
+              variant={"secondary"}
             >
               Back
             </Button>
@@ -517,12 +517,12 @@ function WhyDoWeAsk() {
   return (
     <div className="w-full">
       <button
-        type="button"
+        aria-expanded={isExpanded}
+        className="flex items-center gap-1 text-muted-foreground text-sm transition-colors hover:text-foreground"
         onClick={() => {
           setIsExpanded(!isExpanded);
         }}
-        className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        aria-expanded={isExpanded}
+        type="button"
       >
         <ChevronDown
           className={cn(
@@ -536,7 +536,7 @@ function WhyDoWeAsk() {
       </button>
 
       {isExpanded && (
-        <div className="mt-2 text-sm text-muted-foreground pl-5 border-l-2 border-muted animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="fade-in slide-in-from-top-1 mt-2 animate-in border-muted border-l-2 pl-5 text-muted-foreground text-sm duration-200">
           At Brandeis Design and Innovation, we are committed to building a
           diverse and inclusive community. Collecting demographic information
           helps us to measure our efforts toward these goals!
@@ -556,19 +556,21 @@ const scrollDown = () => {
 
 function ScrollButtons() {
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed right-4 bottom-4 z-50">
       <div className="flex flex-col gap-2">
         <button
-          onClick={scrollUp}
-          className="flex h-32 w-32 items-center justify-center rounded-full border  backdrop-blur-sm"
           aria-label="Scroll up"
+          className="flex h-32 w-32 items-center justify-center rounded-full border backdrop-blur-sm"
+          onClick={scrollUp}
+          type="button"
         >
           <ArrowUp size={64} />
         </button>
         <button
-          onClick={scrollDown}
-          className="flex h-32 w-32 items-center justify-center rounded-full border  backdrop-blur-sm"
           aria-label="Scroll down"
+          className="flex h-32 w-32 items-center justify-center rounded-full border backdrop-blur-sm"
+          onClick={scrollDown}
+          type="button"
         >
           <ArrowDown size={64} />
         </button>

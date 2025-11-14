@@ -1,8 +1,11 @@
 "use client";
 
-import type { Lab } from "~/schemas";
-import { useCallback } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import {
   Form,
@@ -15,11 +18,8 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { QUERIES } from "~/lib/server-actions";
+import type { Lab } from "~/schemas";
 import { CONFIG } from "~/schemas";
-import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 const formSchema = z.object({
   cardId: z
@@ -69,9 +69,9 @@ export function CardIdForm({
       const checkinExists = checkin !== null;
       const checkinCompleted = Boolean(checkin?.endTime);
       if (!checkinExists || checkinCompleted) {
-        router.push(redirect + "/check-in/" + values.cardId);
+        router.push(`${redirect}/check-in/${values.cardId}`);
       } else {
-        router.push(redirect + "/check-out/" + values.cardId);
+        router.push(`${redirect}/check-out/${values.cardId}`);
       }
     },
     [router, redirect, sheetName],
@@ -79,7 +79,7 @@ export function CardIdForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
           name="cardId"
@@ -91,9 +91,11 @@ export function CardIdForm({
                 <FormControl>
                   <Input
                     autoFocus
-                    type="number"
                     disabled={form.formState.isSubmitting}
-                    placeholder="603305000000000"
+                    onBlur={() => {
+                      onBlur();
+                      form.setFocus("cardId");
+                    }}
                     onChange={(e: React.FormEvent<HTMLInputElement>) => {
                       const CARD_ID_LENGTH = 15;
                       onChange(e);
@@ -112,10 +114,8 @@ export function CardIdForm({
                           console.error(`Error submitting form ${String(e)}`);
                         });
                     }}
-                    onBlur={() => {
-                      onBlur();
-                      form.setFocus("cardId");
-                    }}
+                    placeholder="603305000000000"
+                    type="number"
                     {...rest}
                   />
                 </FormControl>
@@ -130,9 +130,9 @@ export function CardIdForm({
 
         <div className="flex gap-4">
           <Button
-            type="submit"
             className="w-full"
             disabled={form.formState.isSubmitting}
+            type="submit"
           >
             {form.formState.isSubmitting ? (
               <Loader2 className="animate-spin" />
@@ -141,12 +141,12 @@ export function CardIdForm({
             )}
           </Button>
           <Button
-            type="button"
             className="w-full"
-            variant={"secondary"}
             onClick={() => {
               window.location.reload();
             }}
+            type="button"
+            variant={"secondary"}
           >
             Clear
           </Button>

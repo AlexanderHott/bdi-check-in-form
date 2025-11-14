@@ -3,7 +3,7 @@ export default function MLLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div>
-      <h1 className="mb-8 text-4xl font-bold">Maker Lab Check-in Form</h1>
+      <h1 className="mb-8 font-bold text-4xl">Maker Lab Check-in Form</h1>
       {children}
     </div>
   );
