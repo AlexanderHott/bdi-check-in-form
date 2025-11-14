@@ -1,8 +1,8 @@
 import "~/styles/globals.css";
 
-import { Providers } from "~/components/providers";
 import { GeistSans } from "geist/font/sans";
-import { type Metadata } from "next";
+import type { Metadata } from "next";
+import { Providers } from "~/components/providers";
 
 export const metadata: Metadata = {
   title: "BDI Check-in Form",
@@ -15,7 +15,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <Providers>
-      <html lang="en" className={GeistSans.variable}>
+      <html className={GeistSans.variable} lang="en">
         <head>
           {}
           {/* <script */}

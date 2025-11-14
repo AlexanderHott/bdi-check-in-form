@@ -2,11 +2,11 @@
 
 import "server-only";
 
-import type { CheckIn, Lab, NewCheckIn, Person } from "~/schemas";
 import { render } from "@react-email/components";
+import * as nodemailer from "nodemailer";
 import { SomethingWentWrongEmail } from "~/components/email/something-went-wrong";
 import { env } from "~/env";
-import * as nodemailer from "nodemailer";
+import type { CheckIn, Lab, NewCheckIn, Person } from "~/schemas";
 
 import { checkInValid } from "../check-in-valid";
 import { formatDateET } from "../date-format";
@@ -79,15 +79,15 @@ export async function sendEmail(checkin: CheckIn, lab: Lab) {
   const htmlContent = await render(
     <SomethingWentWrongEmail
       checkinReasons={checkin.reasons}
-      comment={checkin.comment ?? "<no comment>"}
-      lab={lab.toUpperCase()}
       checkinTime={formatDateET(checkin.startTime)}
       checkoutTime={
         checkin.endTime ? formatDateET(checkin.endTime) : "<no checkout time>"
       }
-      rating={checkin.rating ?? "<no rating>"}
-      name={checkin.person.name}
+      comment={checkin.comment ?? "<no comment>"}
       email={checkin.person.email}
+      lab={lab.toUpperCase()}
+      name={checkin.person.name}
+      rating={checkin.rating ?? "<no rating>"}
     />,
   );
 

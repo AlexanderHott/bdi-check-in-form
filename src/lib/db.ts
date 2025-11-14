@@ -1,10 +1,10 @@
-import type { ScheetsSchema } from "~/lib/sheets";
-import type { CheckIn, Person } from "~/schemas";
-import { formatDateET } from "~/lib/date-format";
-import { Sheets } from "~/lib/sheets";
-import { checkInSchema, personSchema } from "~/schemas";
 import { isValid, parse } from "date-fns";
 import { z } from "zod";
+import { formatDateET } from "~/lib/date-format";
+import type { ScheetsSchema } from "~/lib/sheets";
+import { Sheets } from "~/lib/sheets";
+import type { CheckIn, Person } from "~/schemas";
+import { checkInSchema, personSchema } from "~/schemas";
 
 function serializeCheckIn(checkIn: CheckIn) {
   return [

@@ -1,7 +1,7 @@
+import { redirect } from "next/navigation";
 import { CheckOutForm } from "~/components/CheckOutForm";
 import { getPerson, getRecentCheckin } from "~/lib/server-actions/actions";
 import { CONFIG } from "~/schemas";
-import { redirect } from "next/navigation";
 
 export default async function ALCheckInPage({
   params,
