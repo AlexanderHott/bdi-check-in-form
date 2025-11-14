@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-// import { formatDuration, intervalToDuration } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -149,7 +148,7 @@ export function CheckOutForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  <Card className="cursor-pointer has-aria-checked:border-amber-600 has-aria-checked:bg-amber-50 dark:has-[[aria-checked=true]]:border-amber-900 dark:has-[[aria-checked=true]]:bg-amber-950">
+                  <Card className="cursor-pointer has-aria-checked:border-amber-600 has-aria-checked:bg-amber-50 dark:has-aria-checked:border-amber-900 dark:has-aria-checked:bg-amber-950">
                     <CardContent className="flex items-start gap-4 p-4">
                       <FormControl>
                         <Checkbox
