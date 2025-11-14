@@ -10,7 +10,7 @@ const config = {
     ignoreBuildErrors: true,
   },
   reactCompiler: true,
-  cacheComponents: true,
+  cacheComponents: false,
 };
 
 export default config;
