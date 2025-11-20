@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { CheckInForm } from "~/components/CheckInForm";
-import { getPerson } from "~/lib/server-actions/actions";
+import { QUERIES } from "~/lib/server-actions";
 
 export default async function MLCheckInPage({
   params,
@@ -11,7 +11,7 @@ export default async function MLCheckInPage({
   if (cardId.length !== 15) {
     redirect("/dsl");
   }
-  const person = await getPerson(cardId);
+  const person = await QUERIES.getPerson(cardId);
   if (!person) {
     const redirectUrl = encodeURI(`/dsl/check-in/${cardId}`);
     redirect(`/new/${cardId}?redirect=${redirectUrl}`);
