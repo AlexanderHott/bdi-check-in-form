@@ -3,7 +3,7 @@ import "~/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
 import { Providers } from "~/components/providers";
-
+import { NetworkStatus } from "~/components/network-status";
 export const metadata: Metadata = {
   title: "BDI Check-in Form",
   description: "Check into a BDI space",
@@ -25,6 +25,7 @@ export default function RootLayout({
           {/* /> */}
         </head>
         <body>
+          <NetworkStatus />
           <main className="flex h-full justify-center">
             <div className="w-full max-w-4xl p-4 xl:p-16">{children}</div>
           </main>
