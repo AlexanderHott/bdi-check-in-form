@@ -79,20 +79,6 @@ export function CardIdForm({
 
   return (
     <Form {...form}>
-      <pre>
-        state:{" "}
-        {JSON.stringify(
-          {
-            isSubmitting: form.formState.isSubmitting,
-            isValid: form.formState.isValid,
-            isLoading: form.formState.isLoading,
-            isSubmitted: form.formState.isSubmitted,
-            isSubmitSuccessful: form.formState.isSubmitSuccessful,
-          },
-          null,
-          2,
-        )}
-      </pre>
       <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
